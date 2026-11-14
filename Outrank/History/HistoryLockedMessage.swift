@@ -15,7 +15,7 @@ struct HistoryLockedMessage: View {
             Label("Follow a Team's Season", systemImage: "chart.line.uptrend.xyaxis")
         } description: {
             Text("""
-                History charts any team's ranking in any stat, day by day, for this season and \
+                Historical data charts for any team's ranking in any stat, day by day, for this season and \
                 past ones. It's included with every Outrank subscription.
                 """)
         } actions: {
