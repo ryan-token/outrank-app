@@ -46,6 +46,7 @@ struct RankingsView: View {
             WelcomeView(type: .rankings)
         }
         .environment(\.splitViewIsCollapsed, horizontalSizeClass != .regular)
+        .extendsUnderTabBar()
         .sheet(isPresented: $isShowingTeamPicker) {
             TeamPickerView(team: $model.team)
         }

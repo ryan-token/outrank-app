@@ -28,6 +28,7 @@ struct SettingsView: View {
             WelcomeView(type: .settings)
         }
         .environment(\.splitViewIsCollapsed, horizontalSizeClass != .regular)
+        .extendsUnderTabBar()
     }
 }
 
