@@ -15,10 +15,14 @@ struct RankingsSidebar: View {
     @Binding var isShowingTeamPicker: Bool
     @Binding var isShowingInfoSheet: Bool
 
+    @Environment(\.splitViewIsCollapsed) private var splitViewIsCollapsed
+
     var body: some View {
         // The list only shows the selection, as the highlighted row beside the stat's
-        // screen in regular widths. Its rows set it. See `SidebarRow`.
-        List(selection: .constant(selectedStat)) {
+        // screen in two columns. Its rows set it. See `SidebarRow`. Collapsed, the list
+        // gets no selection at all: a split view also navigates on its sidebar list's
+        // selection, which would compete with the push the rows already cause.
+        List(selection: .constant(splitViewIsCollapsed ? nil : selectedStat)) {
             Section {
                 ForEach(model.sortedRankings) { entry in
                     SidebarRow(value: entry.id, selection: $selectedStat) {

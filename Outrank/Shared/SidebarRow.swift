@@ -35,7 +35,7 @@ struct SidebarRow<Value: Hashable, Label: View>: View {
                 }
             }
         }
-        // Lets a list given the selection highlight this row.
+        // Lets a list that is given the selection highlight this row.
         .tag(value)
         .accessibilityAddTraits(selection == value ? .isSelected : [])
     }

@@ -12,9 +12,12 @@ struct SettingsSidebar: View {
 
     @State private var isShowingAbout = false
 
+    @Environment(\.splitViewIsCollapsed) private var splitViewIsCollapsed
+
     var body: some View {
-        // The list only shows the selection; its rows set it. See `SidebarRow`.
-        List(selection: .constant(selectedDetail)) {
+        // The list only shows the selection, and only in two columns; its rows set it.
+        // See `SidebarRow` and `RankingsSidebar`.
+        List(selection: .constant(splitViewIsCollapsed ? nil : selectedDetail)) {
             PreferencesSection(selectedDetail: $selectedDetail)
             SupportSection(selectedDetail: $selectedDetail)
             GeneralSection(isShowingAbout: $isShowingAbout)
