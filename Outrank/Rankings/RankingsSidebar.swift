@@ -16,10 +16,12 @@ struct RankingsSidebar: View {
     @Binding var isShowingInfoSheet: Bool
 
     var body: some View {
-        List(selection: $selectedStat) {
-            Section("Sorted by \(model.sortMethod.sectionLabel())") {
+        // The list only shows the selection, as the highlighted row beside the stat's
+        // screen in regular widths. Its rows set it. See `SidebarRow`.
+        List(selection: .constant(selectedStat)) {
+            Section {
                 ForEach(model.sortedRankings) { entry in
-                    NavigationLink(value: entry.id) {
+                    SidebarRow(value: entry.id, selection: $selectedStat) {
                         RankingRow(title: entry.title, ranking: entry.ranking, titleFont: .headline)
                     }
                 }
@@ -28,6 +30,12 @@ struct RankingsSidebar: View {
                     Text("😕 Error loading rankings for \(model.team). Please try again or try a different team.")
                         .foregroundStyle(.secondary)
                 }
+            } header: {
+                RankingsListHeader(
+                    lastUpdated: model.lastUpdated,
+                    isLoading: model.isAwaitingFirstLoad,
+                    sortLabel: model.sortMethod.sectionLabel()
+                )
             }
         }
         .refreshable {

@@ -13,12 +13,10 @@ struct TopOrBottomFourView: View {
     let team: String
     let rankings: [String: Int]
 
-    /// The team's four best or worst ranked stats, ignoring stats it isn't ranked in.
+    /// The team's four best or worst ranked stats.
     private var rankedFour: [RankingEntry] {
-        let ranked = rankings.compactMap { stat, ranking in
-            ranking == RankingsResponse.unranked
-                ? nil
-                : RankingEntry(id: stat, title: Conversions.humanReadableStat(for: stat), ranking: ranking)
+        let ranked = rankings.map { stat, ranking in
+            RankingEntry(id: stat, title: Conversions.humanReadableStat(for: stat), ranking: ranking)
         }
 
         return Array(type.sortMethod.sorted(ranked).prefix(4))

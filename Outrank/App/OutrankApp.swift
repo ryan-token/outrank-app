@@ -20,6 +20,7 @@ struct OutrankApp: App {
     var body: some Scene {
         WindowGroup {
             MainView()
+                .refreshesEntitlementsWhenActive()
                 .environment(\.managedObjectContext, persistentContainer.viewContext)
                 .environment(store)
                 .task {

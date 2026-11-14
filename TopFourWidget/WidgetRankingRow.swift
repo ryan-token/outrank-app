@@ -9,7 +9,7 @@ import SwiftUI
 
 struct WidgetRankingRow: View {
     let title: String
-    let ranking: Int
+    let ranking: Int?
     let rankingColor: Color
 
     var body: some View {

@@ -17,7 +17,7 @@ struct ComparisonView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Sorted by \(model.sortMethod.sectionLabel(rankingPrefix: model.teamOne))") {
+                Section {
                     ForEach(model.rows) { entry in
                         ComparisonRow(
                             title: entry.title,
@@ -27,6 +27,8 @@ struct ComparisonView: View {
                             teamTwoRanking: entry.teamTwoRanking
                         )
                     }
+                } header: {
+                    Text("Sorted by \(model.sortMethod.sectionLabel(rankingPrefix: model.teamOne))")
                 }
 
                 if model.loadFailed {

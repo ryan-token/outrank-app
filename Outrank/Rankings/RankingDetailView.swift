@@ -11,7 +11,9 @@ import SwiftUI
 struct RankingDetailView: View {
     let team: String
     let stat: String
-    let ranking: Int
+
+    /// `nil` when the team has no ranking in the stat.
+    let ranking: Int?
 
     @State private var model = StatRankingsModel()
     @State private var reloadAttempt = 0
@@ -35,7 +37,7 @@ struct RankingDetailView: View {
                 Text("Description:")
                     .font(.headline)
 
-                Text(StatDescriptions.description(for: stat))
+                Text(AllStats.description(for: stat))
                     .foregroundStyle(.secondary)
             }
 

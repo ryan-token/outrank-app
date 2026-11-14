@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SupportSection: View {
+    @Binding var selectedDetail: SettingsDetail?
+
     var body: some View {
         Section("Support") {
             Link(destination: AppLinks.writeReview) {
@@ -19,11 +21,11 @@ struct SupportSection: View {
                 )
             }
 
-            NavigationLink(value: SettingsDetail.tipJar) {
+            SidebarRow(value: .tipJar, selection: $selectedDetail) {
                 SettingsRow(icon: "centsign.square.fill", iconColor: .orange, title: "Leave a Tip")
             }
 
-            NavigationLink(value: SettingsDetail.subscriptions) {
+            SidebarRow(value: .subscriptions, selection: $selectedDetail) {
                 SettingsRow(icon: "dollarsign.square.fill", iconColor: .green, title: "Subscribe")
             }
         }

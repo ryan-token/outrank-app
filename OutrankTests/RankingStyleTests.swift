@@ -12,7 +12,7 @@ struct RankingStyleTests {
         #expect(RankingStyle.color(for: 1) == .green)
         #expect(RankingStyle.color(for: RankingStyle.goodRankingCutoff) == .green)
         #expect(RankingStyle.color(for: RankingStyle.goodRankingCutoff + 1) == .red)
-        #expect(RankingStyle.color(for: RankingsResponse.unranked) == .secondary)
+        #expect(RankingStyle.color(for: nil) == .secondary)
     }
 
     @Test func comparisonColorReflectsWhoRanksBetter() {
@@ -22,7 +22,7 @@ struct RankingStyleTests {
     }
 
     @Test func unrankedTeamIsNeutralNotLosing() {
-        #expect(RankingStyle.comparisonColor(for: RankingsResponse.unranked, comparedTo: 5) == .secondary)
-        #expect(RankingStyle.comparisonColor(for: 5, comparedTo: RankingsResponse.unranked) == .green)
+        #expect(RankingStyle.comparisonColor(for: nil, comparedTo: 5) == .secondary)
+        #expect(RankingStyle.comparisonColor(for: 5, comparedTo: nil) == .green)
     }
 }

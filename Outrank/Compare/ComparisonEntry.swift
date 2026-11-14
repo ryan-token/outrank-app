@@ -12,6 +12,8 @@ nonisolated struct ComparisonEntry: Identifiable, Equatable, Sendable {
     /// The stat's API key.
     let id: String
     let title: String
-    let teamOneRanking: Int
-    let teamTwoRanking: Int
+
+    /// `nil` when the team has no ranking in the stat.
+    let teamOneRanking: Int?
+    let teamTwoRanking: Int?
 }

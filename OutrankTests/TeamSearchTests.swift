@@ -13,6 +13,7 @@ struct TeamSearchTests {
         search.text = ""
 
         #expect(search.matchingTeams == AllTeams.all)
+        #expect(search.hasMatchingTeams)
         #expect(search.matches("Any Favorite"))
     }
 
@@ -31,6 +32,7 @@ struct TeamSearchTests {
         let search = TeamSearch()
         search.text = "Zzz"
         #expect(search.matchingTeams.isEmpty)
-        #expect(!search.matches("Tulsa"))
+        #expect(search.hasMatchingTeams == false)
+        #expect(search.matches("Tulsa") == false)
     }
 }

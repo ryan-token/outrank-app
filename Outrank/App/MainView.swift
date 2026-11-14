@@ -25,6 +25,10 @@ struct MainView: View {
                 ComparisonView()
             }
 
+            Tab("History", systemImage: "chart.line.uptrend.xyaxis", value: .history) {
+                HistoryView()
+            }
+
             Tab("Settings", systemImage: "gear", value: .settings) {
                 SettingsView(selectedDetail: $settingsDetail)
             }

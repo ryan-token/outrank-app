@@ -11,7 +11,9 @@ import SwiftUI
 /// or a team with its ranking in one stat.
 struct RankingRow: View {
     let title: String
-    let ranking: Int
+
+    /// `nil` when the team has no ranking in the stat.
+    let ranking: Int?
     var titleFont: Font = .body
     var rankingFont: Font = .body
 
@@ -55,7 +57,7 @@ struct RankingRow: View {
             }
 
             NavigationLink(value: "Unranked") {
-                RankingRow(title: "Blocked Kicks", ranking: RankingsResponse.unranked, titleFont: .headline)
+                RankingRow(title: "Blocked Kicks", ranking: nil, titleFont: .headline)
             }
         }
     }

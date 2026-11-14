@@ -18,7 +18,7 @@ struct ConversionsTests {
     }
 
     @Test func unrankedReadsAsUnknown() {
-        #expect(Conversions.humanReadableRanking(for: RankingsResponse.unranked) == "Unknown")
+        #expect(Conversions.humanReadableRanking(for: nil) == "Unknown")
     }
 
     @Test(arguments: [

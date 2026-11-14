@@ -17,11 +17,11 @@ final class StatRankingsModel {
     /// Changes whenever `entries` does, giving views a cheap value to animate on.
     private(set) var revision = 0
 
-    @ObservationIgnored private let fetch: (String) async throws -> RankingsResponse
+    @ObservationIgnored private let fetch: (String) async throws -> RankingsSnapshot
 
     private static let logger = Logger(category: "StatRankingsModel")
 
-    init(fetch: @escaping (String) async throws -> RankingsResponse = RankingsAPI.statRankings(for:)) {
+    init(fetch: @escaping (String) async throws -> RankingsSnapshot = RankingsAPI.statRankings(for:)) {
         #if DEBUG
         // Screenshots load frozen rankings rather than calling the API.
         self.fetch = ScreenshotMode.isEnabled ? ScreenshotFixtures.statRankings(for:) : fetch
@@ -32,10 +32,13 @@ final class StatRankingsModel {
 
     func load(stat: String) async {
         do {
-            let response = try await fetch(stat)
+            let snapshot = try await fetch(stat)
             guard !Task.isCancelled else { return }
-            let unsorted = response.rankings.map { teamKey, ranking in
-                RankingEntry(id: teamKey, title: AllTeams.name(forAPIKey: teamKey), ranking: ranking)
+            // The API leaves out teams with no ranking in the stat. They still get a row,
+            // after the ranked ones, so every team can be found in the list.
+            let teams = Set(AllTeams.all.map(\.name)).union(snapshot.ranks.keys)
+            let unsorted = teams.map { team in
+                RankingEntry(id: team, title: team, ranking: snapshot.ranks[team])
             }
             entries = SortMethod.byRankingAscending.sorted(unsorted)
             loadFailed = false

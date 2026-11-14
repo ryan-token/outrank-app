@@ -23,3 +23,10 @@ func makeIsolatedDefaults() -> UserDefaults {
 final class ModelReference<Model: AnyObject> {
     weak var model: Model?
 }
+
+extension RankingsSnapshot {
+    /// A snapshot for tests that don't depend on when it was scraped.
+    static func stub(_ ranks: [String: Int] = [:], scrapedAt: Date = Date(timeIntervalSince1970: 0)) -> Self {
+        RankingsSnapshot(ranks: ranks, scrapedAt: scrapedAt)
+    }
+}

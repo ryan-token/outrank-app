@@ -16,8 +16,8 @@ nonisolated enum Conversions {
 
     /// An English ordinal for a ranking, such as "1st" or "112th", or "Unknown" for a
     /// team with no ranking in the stat.
-    static func humanReadableRanking(for ranking: Int) -> String {
-        if ranking == RankingsResponse.unranked { return "Unknown" }
+    static func humanReadableRanking(for ranking: Int?) -> String {
+        guard let ranking else { return "Unknown" }
 
         // Teens always take "th" (11th, 12th, 13th, 111th, ...).
         if (11...13).contains(ranking % 100) { return "\(ranking)th" }

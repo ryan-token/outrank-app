@@ -1,5 +1,5 @@
 //
-//  StatDescriptions.swift
+//  AllStats.swift
 //  Outrank
 //
 //  Created by Ryan Token on 10/4/21.
@@ -7,7 +7,25 @@
 
 import Foundation
 
-nonisolated enum StatDescriptions {
+/// Every stat the backend ranks, and the one place in the app that stat keys live.
+///
+/// The API leaves a stat out of a team's rankings when the team has no ranking in it, so
+/// screens that give every stat a row build them from this list rather than from a response.
+nonisolated enum AllStats {
+    /// Every stat's API key, in alphabetical order.
+    static let all: [String] = descriptions.keys.sorted()
+
+    /// `all`, plus any stat in `keys` this version of the app doesn't know about, so a stat
+    /// the backend starts ranking still gets a row.
+    static func including(_ keys: some Sequence<String>) -> [String] {
+        let unknown = keys.filter { descriptions[$0] == nil }
+        return unknown.isEmpty ? all : all + Set(unknown).sorted()
+    }
+
+    static func description(for stat: String) -> String {
+        descriptions[stat] ?? "Description Unknown."
+    }
+
     private static let descriptions: [String: String] = [
         "BlockedKicks": "Total number of kicks a team has blocked.",
         "FewestPenaltiesPerGame": """
@@ -81,8 +99,4 @@ nonisolated enum StatDescriptions {
             Total number of turnovers a team has gained. Includes fumble recoveries and passes intercepted.
             """
     ]
-
-    static func description(for stat: String) -> String {
-        descriptions[stat] ?? "Description Unknown."
-    }
 }

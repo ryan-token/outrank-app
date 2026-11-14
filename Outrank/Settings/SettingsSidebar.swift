@@ -13,10 +13,14 @@ struct SettingsSidebar: View {
     @State private var isShowingAbout = false
 
     var body: some View {
-        List(selection: $selectedDetail) {
-            PreferencesSection()
-            SupportSection()
+        // The list only shows the selection; its rows set it. See `SidebarRow`.
+        List(selection: .constant(selectedDetail)) {
+            PreferencesSection(selectedDetail: $selectedDetail)
+            SupportSection(selectedDetail: $selectedDetail)
             GeneralSection(isShowingAbout: $isShowingAbout)
+            #if DEBUG
+            DebugSection()
+            #endif
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)

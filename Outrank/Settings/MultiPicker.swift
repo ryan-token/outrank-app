@@ -10,6 +10,8 @@ import SwiftUI
 
 /// The Settings row that opens the favorite-teams editor, summarizing the current picks.
 struct MultiPicker: View {
+    @Binding var selectedDetail: SettingsDetail?
+
     @FetchRequest(fetchRequest: Favorite.allFavoritesFetchRequest, animation: .default)
     private var favorites: FetchedResults<Favorite>
 
@@ -23,7 +25,7 @@ struct MultiPicker: View {
     }
 
     var body: some View {
-        NavigationLink(value: SettingsDetail.favorites) {
+        SidebarRow(value: .favorites, selection: $selectedDetail) {
             LabeledContent {
                 Text(summary)
             } label: {

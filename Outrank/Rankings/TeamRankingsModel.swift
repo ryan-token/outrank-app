@@ -23,7 +23,8 @@ final class TeamRankingsModel {
             guard team != oldValue else { return }
             defaults.set(team, forKey: Self.teamKey)
             // Drop the previous team's rankings so they never show under the new name.
-            rankings = [:]
+            snapshot = nil
+            loadedAt = nil
             loadFailed = false
             resort()
         }
@@ -33,7 +34,8 @@ final class TeamRankingsModel {
         didSet { resort() }
     }
 
-    private(set) var rankings: [String: Int] = [:]
+    /// Every stat with the team's ranking in it, in `sortMethod` order. Empty until the
+    /// team's rankings load.
     private(set) var sortedRankings: [RankingEntry] = []
     private(set) var loadFailed = false
 
@@ -41,16 +43,35 @@ final class TeamRankingsModel {
     /// rankings themselves, which would be compared element by element on every update.
     private(set) var revision = 0
 
+    /// When the rankings on screen were scraped; `nil` until the team's rankings load.
+    var lastUpdated: Date? {
+        snapshot?.scrapedAt
+    }
+
+    /// Whether the team is still waiting for its first rankings, as opposed to loaded or
+    /// failed. Refreshing already-loaded rankings doesn't count.
+    var isAwaitingFirstLoad: Bool {
+        snapshot == nil && !loadFailed
+    }
+
+    private var snapshot: RankingsSnapshot?
+
+    /// When `snapshot` arrived, for deciding whether it is still current.
+    @ObservationIgnored private var loadedAt: Date?
+
     @ObservationIgnored private let defaults: UserDefaults
-    @ObservationIgnored private let fetch: (String) async throws -> RankingsResponse
+    @ObservationIgnored private let fetch: (String) async throws -> RankingsSnapshot
+    @ObservationIgnored private let now: () -> Date
 
     private static let logger = Logger(category: "TeamRankingsModel")
 
     init(
         defaults: UserDefaults = .standard,
-        fetch: @escaping (String) async throws -> RankingsResponse = RankingsAPI.teamRankings(for:)
+        fetch: @escaping (String) async throws -> RankingsSnapshot = RankingsAPI.teamRankings(for:),
+        now: @escaping () -> Date = Date.init
     ) {
         self.defaults = defaults
+        self.now = now
         #if DEBUG
         // Screenshots load frozen rankings rather than calling the API.
         self.fetch = ScreenshotMode.isEnabled ? ScreenshotFixtures.teamRankings(for:) : fetch
@@ -66,9 +87,9 @@ final class TeamRankingsModel {
         #endif
     }
 
-    /// The team's ranking in a stat, or ``RankingsResponse/unranked`` when it has none.
-    func ranking(forStat stat: String) -> Int {
-        rankings[stat] ?? RankingsResponse.unranked
+    /// The team's ranking in a stat, or `nil` when it has none.
+    func ranking(forStat stat: String) -> Int? {
+        snapshot?.ranks[stat]
     }
 
     /// Fetches the current team's rankings.
@@ -78,11 +99,12 @@ final class TeamRankingsModel {
         let requestedTeam = team
 
         do {
-            let response = try await fetch(requestedTeam)
+            let snapshot = try await fetch(requestedTeam)
             // The team may have changed while this request was in flight; its own load
             // will supply the rankings.
             guard !Task.isCancelled, requestedTeam == team else { return false }
-            rankings = response.rankings
+            self.snapshot = snapshot
+            loadedAt = now()
             loadFailed = false
             resort()
             return true
@@ -96,9 +118,26 @@ final class TeamRankingsModel {
         }
     }
 
+    /// Fetches the current team's rankings unless the ones on screen are still current,
+    /// so returning to the tab or the app doesn't refetch what it just loaded.
+    /// - Returns: Whether new rankings loaded and are now on screen.
+    @discardableResult
+    func loadIfStale() async -> Bool {
+        if let loadedAt, !loadFailed, now().timeIntervalSince(loadedAt) < RankingsSnapshot.maxAge {
+            return false
+        }
+        return await load()
+    }
+
     private func resort() {
-        let entries = rankings.map { stat, ranking in
-            RankingEntry(id: stat, title: Conversions.humanReadableStat(for: stat), ranking: ranking)
+        guard let snapshot else {
+            sortedRankings = []
+            revision += 1
+            return
+        }
+
+        let entries = AllStats.including(snapshot.ranks.keys).map { stat in
+            RankingEntry(id: stat, title: Conversions.humanReadableStat(for: stat), ranking: snapshot.ranks[stat])
         }
         sortedRankings = sortMethod.sorted(entries)
         revision += 1

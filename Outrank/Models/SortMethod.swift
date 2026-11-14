@@ -42,14 +42,24 @@ nonisolated enum SortMethod: String, CaseIterable, Identifiable {
         case .byStatReverseAlphabetically:
             entries.sorted { $0.id > $1.id }
         case .byRankingAscending:
-            entries.sorted { ($0.ranking, $0.id) < ($1.ranking, $1.id) }
+            Self.sortedByRanking(entries, bestFirst: true)
         case .byRankingDescending:
-            entries.sorted { (Self.worstFirstKey($0), $1.id) > (Self.worstFirstKey($1), $0.id) }
+            Self.sortedByRanking(entries, bestFirst: false)
         }
     }
 
-    /// `unranked` is the largest value, so worst-first ordering would put it at the top.
-    private static func worstFirstKey(_ entry: RankingEntry) -> Int {
-        entry.ranking == RankingsResponse.unranked ? Int.min : entry.ranking
+    private static func sortedByRanking(_ entries: [RankingEntry], bestFirst: Bool) -> [RankingEntry] {
+        entries.sorted { lhs, rhs in
+            switch (lhs.ranking, rhs.ranking) {
+            case let (lhsRanking?, rhsRanking?) where lhsRanking != rhsRanking:
+                bestFirst ? lhsRanking < rhsRanking : lhsRanking > rhsRanking
+            case (.some, nil):
+                true
+            case (nil, .some):
+                false
+            default:
+                lhs.id < rhs.id
+            }
+        }
     }
 }

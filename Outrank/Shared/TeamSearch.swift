@@ -12,14 +12,16 @@ final class TeamSearch {
     var text = "" {
         didSet {
             matchingTeams = AllTeams.all.filter { $0.name.matchesSearch(text) }
-            // Stored rather than computed, so views that only check it update when
-            // searching starts or stops, not on every keystroke.
+            // Stored rather than computed, so views that only check these update when
+            // the answer changes, not on every keystroke.
             isSearching = !text.isEmpty
+            hasMatchingTeams = !matchingTeams.isEmpty
         }
     }
 
     private(set) var matchingTeams = AllTeams.all
     private(set) var isSearching = false
+    private(set) var hasMatchingTeams = true
 
     /// Whether a team outside `AllTeams`, such as a stored favorite, matches the search.
     func matches(_ team: String) -> Bool {

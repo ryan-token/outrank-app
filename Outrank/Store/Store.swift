@@ -16,9 +16,21 @@ typealias RenewalInfo = StoreKit.Product.SubscriptionInfo.RenewalInfo
 final class Store {
     private(set) var tips: [Product] = []
     private(set) var subscriptions: [Product] = []
-    private(set) var purchasedIdentifiers: Set<String> = []
 
-    @ObservationIgnored private var updateListenerTask: Task<Void, Never>?
+    /// The subscriptions the user holds right now.
+    private(set) var activeSubscriptionIDs: Set<String> = []
+
+    /// Whether the user holds any subscription, which unlocks History.
+    private(set) var subscriptionAccess = SubscriptionAccess.unknown
+
+    @ObservationIgnored private var transactionListener: Task<Void, Never>?
+    @ObservationIgnored private var statusListener: Task<Void, Never>?
+
+    /// Entitlement checks can overlap, and one that started later can finish first. These
+    /// number each check and remember the newest one applied, so a check that finishes
+    /// late can't replace a newer one's answer.
+    @ObservationIgnored private var entitlementChecksStarted = 0
+    @ObservationIgnored private var newestEntitlementCheckApplied = 0
 
     private let productIdToEmoji: [String: String]
     private let logger = Logger(category: "Store")
@@ -32,27 +44,50 @@ final class Store {
             productIdToEmoji = [:]
         }
 
-        // Start a transaction listener as close to app launch as possible so we don't miss any transactions.
-        updateListenerTask = listenForTransactions()
+        // Start listening as close to app launch as possible so we don't miss any transactions.
+        transactionListener = listenForTransactions()
+        statusListener = listenForStatusChanges()
 
         Task {
+            // Entitlements come first: they are kept on the device, so what the user has
+            // unlocked is known without waiting on a product request to the App Store.
+            await refreshEntitlements()
             await requestProducts()
-            await refreshPurchasedIdentifiers()
         }
     }
 
+    isolated deinit {
+        transactionListener?.cancel()
+        statusListener?.cancel()
+    }
+
+    /// Purchases made outside the app, renewals, refunds, and purchases made in one of
+    /// StoreKit's own views, such as the History paywall, all arrive here.
     private func listenForTransactions() -> Task<Void, Never> {
         Task { [weak self] in
             for await result in Transaction.updates {
-                guard let self else { return }
-                do {
-                    let transaction = try result.payloadValue
-                    updatePurchasedIdentifiers(transaction)
-                    await transaction.finish()
-                } catch {
-                    logger.error("Transaction failed verification: \(String(describing: error))")
-                }
+                await self?.handle(result)
             }
+        }
+    }
+
+    /// A subscription that lapses sends no transaction, only a change of status, so this
+    /// is what locks History again in an app that was left running.
+    private func listenForStatusChanges() -> Task<Void, Never> {
+        Task { [weak self] in
+            for await _ in Product.SubscriptionInfo.Status.updates {
+                await self?.refreshEntitlements()
+            }
+        }
+    }
+
+    private func handle(_ update: VerificationResult<Transaction>) async {
+        do {
+            let transaction = try update.payloadValue
+            await refreshEntitlements()
+            await transaction.finish()
+        } catch {
+            logger.error("Transaction failed verification: \(String(describing: error))")
         }
     }
 
@@ -82,27 +117,48 @@ final class Store {
         }
     }
 
-    /// Reads `Transaction.currentEntitlements` and rebuilds the set of purchased identifiers.
-    /// Useful at launch and after `AppStore.sync()` to reflect any restored purchases.
-    func refreshPurchasedIdentifiers() async {
-        var ids: Set<String> = []
+    /// Works out what the user has unlocked from `Transaction.currentEntitlements`, which
+    /// holds every subscription that is active or in its billing grace period, and leaves
+    /// out ones that have expired or been refunded.
+    ///
+    /// Runs at launch, whenever a transaction or a change of subscription status arrives,
+    /// after a purchase, and when the app returns to the foreground.
+    func refreshEntitlements() async {
+        #if DEBUG
+        // Screenshots show the app as a subscriber sees it, whatever the simulator holds.
+        if ScreenshotMode.isEnabled {
+            subscriptionAccess = .subscribed
+            return
+        }
+        #endif
+
+        entitlementChecksStarted += 1
+        let check = entitlementChecksStarted
+
+        var subscriptionIDs: Set<String> = []
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result,
+                  transaction.productType == .autoRenewable,
                   transaction.revocationDate == nil,
                   !transaction.isUpgraded
             else { continue }
-            ids.insert(transaction.productID)
+            subscriptionIDs.insert(transaction.productID)
         }
-        purchasedIdentifiers = ids
+
+        // A check that started after this one read entitlements at least as new.
+        guard check > newestEntitlementCheckApplied else { return }
+        newestEntitlementCheckApplied = check
+        activeSubscriptionIDs = subscriptionIDs
+        subscriptionAccess = subscriptionIDs.isEmpty ? .notSubscribed : .subscribed
     }
 
+    /// - Returns: The transaction, or `nil` when the user cancelled or the purchase is
+    ///   waiting on approval.
     func purchase(_ product: Product) async throws -> Transaction? {
-        let result = try await product.purchase()
-
-        switch result {
+        switch try await product.purchase() {
         case .success(let verification):
             let transaction = try verification.payloadValue
-            updatePurchasedIdentifiers(transaction)
+            await refreshEntitlements()
             await transaction.finish()
             return transaction
         case .userCancelled, .pending:
@@ -112,35 +168,11 @@ final class Store {
         }
     }
 
-    /// Restores the user's purchases by syncing with the App Store, then refreshes entitlements.
-    func restorePurchases() async throws {
-        try await AppStore.sync()
-        await refreshPurchasedIdentifiers()
-    }
-
-    func updatePurchasedIdentifiers(_ transaction: Transaction) {
-        if transaction.revocationDate == nil {
-            purchasedIdentifiers.insert(transaction.productID)
-        } else {
-            purchasedIdentifiers.remove(transaction.productID)
-        }
-    }
-
     func emoji(for productId: String) -> String {
         productIdToEmoji[productId] ?? ""
     }
 
     private func sortByPrice(_ products: [Product]) -> [Product] {
         products.sorted { $0.price < $1.price }
-    }
-
-    func tier(for productId: String) -> SubscriptionTier {
-        switch productId {
-        case "subscription.small": .small
-        case "subscription.medium": .medium
-        case "subscription.large": .large
-        case "subscription.giant": .giant
-        default: .none
-        }
     }
 }

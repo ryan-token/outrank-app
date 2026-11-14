@@ -15,5 +15,6 @@ nonisolated struct TeamRankingsEntry: TimelineEntry {
     /// before WidgetKit asks for a new timeline.
     let team: String
 
+    /// The team's ranking in each stat it is ranked in.
     let rankings: [String: Int]
 }
