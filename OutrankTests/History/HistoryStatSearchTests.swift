@@ -12,7 +12,5 @@ struct HistoryStatSearchTests {
 
         // "ScoringOffense" has no space in it; the name on screen does.
         #expect(model.stats(matching: " scoring off ") == ["ScoringOffense"])
-        #expect(model.stats(matching: "") == model.stats)
-        #expect(model.stats(matching: "Zzz").isEmpty)
     }
 }

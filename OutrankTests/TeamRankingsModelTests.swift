@@ -27,16 +27,13 @@ struct TeamRankingsModelTests {
 
         #expect(model.sortedRankings.isEmpty)
         #expect(model.ranking(forStat: "TotalDefense") == nil)
-        #expect(model.lastUpdated == nil)
-        #expect(model.isAwaitingFirstLoad)
     }
 
     @Test func loadGivesEveryStatARowWhetherOrNotTheTeamIsRankedInIt() async throws {
         var requestedTeams: [String] = []
-        let scrapedAt = Date(timeIntervalSince1970: 1_792_764_120)
         let model = TeamRankingsModel(defaults: makeIsolatedDefaults()) { team in
             requestedTeams.append(team)
-            return .stub(rankings, scrapedAt: scrapedAt)
+            return .stub(rankings)
         }
 
         let loaded = await model.load()
@@ -51,7 +48,6 @@ struct TeamRankingsModelTests {
         let fumblesLost = try #require(model.sortedRankings.first { $0.id == "FumblesLost" })
         #expect(fumblesLost.ranking == nil)
         #expect(model.ranking(forStat: "TotalDefense") == 12)
-        #expect(model.lastUpdated == scrapedAt)
         #expect(model.loadFailed == false)
     }
 

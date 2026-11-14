@@ -19,13 +19,13 @@ struct HistoryStatList: View {
             Button {
                 choose(stat)
             } label: {
-                HistoryStatRow(stat: stat, isSelected: stat == model.stat)
+                HistoryStatRow(stat: stat)
             }
             .buttonStyle(.plain)
         }
         .overlay {
             if stats.isEmpty {
-                ContentUnavailableView.search(text: searchText)
+                ContentUnavailableView.search
             }
         }
     }

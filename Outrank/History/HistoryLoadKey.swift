@@ -5,12 +5,10 @@
 
 import Foundation
 
-/// What the History screen checks for a missing or stale season on: the team or season
-/// changing, a retry after a failed load, or the app returning to the foreground after
-/// possibly sitting in the background for days.
+/// What makes the History screen check for a missing or stale season: the team or season
+/// changing, or a retry after a failed load.
 struct HistoryLoadKey: Hashable {
     let team: String
     let season: String?
     let reloadAttempt: Int
-    let isActive: Bool
 }

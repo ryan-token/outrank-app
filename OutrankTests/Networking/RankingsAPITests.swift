@@ -20,24 +20,36 @@ struct RankingsAPITests {
         let snapshot: RankingsSnapshot = try RankingsAPI.decode(from: json)
 
         #expect(snapshot.ranks == ["ScoringOffense": 34, "TotalDefense": 101])
+    }
+
+    @Test func decodesMetadata() throws {
+        let json = Data(#"""
+            {"version":"9bfe9fc","date":"2026-11-14","scrapedAt":"2026-11-14T00:18:38.816Z","season":"2026",
+             "throughGames":"2026-11-12","seasons":["2025","2026"]}
+            """#.utf8)
+
+        let metadata: RankingsMetadata = try RankingsAPI.decode(from: json)
+
+        #expect(metadata.seasons == ["2025", "2026"])
         // The backend's timestamps carry milliseconds, which the decoder must keep.
-        #expect(abs(snapshot.scrapedAt.timeIntervalSince(Self.scrapedAt) - 0.816) < 0.001)
+        let scrapedAt = try #require(metadata.scrapedAt)
+        #expect(abs(scrapedAt.timeIntervalSince(Self.scrapedAt) - 0.816) < 0.001)
     }
 
     @Test(arguments: ["2026-11-14T00:18:38Z", "2026-11-14T00:18:38.000Z"])
     func timestampsDecodeWithOrWithoutFractionalSeconds(timestamp: String) throws {
-        let json = Data(#"{"scrapedAt":"\#(timestamp)","ranks":{}}"#.utf8)
+        let json = Data(#"{"scrapedAt":"\#(timestamp)","seasons":[]}"#.utf8)
 
-        let snapshot: RankingsSnapshot = try RankingsAPI.decode(from: json)
+        let metadata: RankingsMetadata = try RankingsAPI.decode(from: json)
 
-        #expect(snapshot.scrapedAt == Self.scrapedAt)
+        #expect(metadata.scrapedAt == Self.scrapedAt)
     }
 
     @Test func timestampThatIsNotISO8601IsRejected() {
-        let json = Data(#"{"scrapedAt":"yesterday","ranks":{}}"#.utf8)
+        let json = Data(#"{"scrapedAt":"yesterday","seasons":[]}"#.utf8)
 
         #expect(throws: DecodingError.self) {
-            let _: RankingsSnapshot = try RankingsAPI.decode(from: json)
+            let _: RankingsMetadata = try RankingsAPI.decode(from: json)
         }
     }
 

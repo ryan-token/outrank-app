@@ -147,7 +147,7 @@ final class HistoryModel {
     /// Loads unless the season on screen is still current, so returning to the tab or the
     /// app doesn't refetch what it just loaded.
     func loadIfStale() async {
-        if history != nil, let loadedAt, now().timeIntervalSince(loadedAt) < RankingsSnapshot.maxAge {
+        if history != nil, RankingsSnapshot.isCurrent(loadedAt: loadedAt, now: now()) {
             return
         }
         await load()

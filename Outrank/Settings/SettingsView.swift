@@ -27,7 +27,7 @@ struct SettingsView: View {
             // Shown until a page is selected, where there is room for a second column.
             WelcomeView(type: .settings)
         }
-        .environment(\.splitViewIsCollapsed, horizontalSizeClass == .compact)
+        .environment(\.splitViewIsCollapsed, horizontalSizeClass != .regular)
     }
 }
 

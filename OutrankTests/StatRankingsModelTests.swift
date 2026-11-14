@@ -3,6 +3,7 @@
 //  OutrankTests
 //
 
+import Foundation
 import Testing
 @testable import Outrank
 
@@ -30,6 +31,27 @@ struct StatRankingsModelTests {
 
         #expect(model.entries.first?.title == "New Program")
         #expect(model.entries.count == AllTeams.all.count + 1)
+    }
+
+    @Test func currentRankingsAreNotFetchedAgainUntilTheyAreStale() async {
+        var clock = Date.now
+        var fetchCount = 0
+        let model = StatRankingsModel(
+            fetch: { _ in
+                fetchCount += 1
+                return .stub()
+            },
+            now: { clock }
+        )
+        await model.loadIfStale(stat: "ScoringOffense")
+
+        clock += RankingsSnapshot.maxAge - 1
+        await model.loadIfStale(stat: "ScoringOffense")
+        #expect(fetchCount == 1)
+
+        clock += 2
+        await model.loadIfStale(stat: "ScoringOffense")
+        #expect(fetchCount == 2)
     }
 
     @Test func failedLoadIsReported() async {

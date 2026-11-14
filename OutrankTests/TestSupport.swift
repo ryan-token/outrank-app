@@ -25,8 +25,7 @@ final class ModelReference<Model: AnyObject> {
 }
 
 extension RankingsSnapshot {
-    /// A snapshot for tests that don't depend on when it was scraped.
-    static func stub(_ ranks: [String: Int] = [:], scrapedAt: Date = Date(timeIntervalSince1970: 0)) -> Self {
-        RankingsSnapshot(ranks: ranks, scrapedAt: scrapedAt)
+    static func stub(_ ranks: [String: Int] = [:]) -> Self {
+        RankingsSnapshot(ranks: ranks)
     }
 }

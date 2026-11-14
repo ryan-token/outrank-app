@@ -163,9 +163,7 @@ final class ComparisonModel {
     private func loadIfStale(_ slot: ComparisonSlot) async {
         let state = self[state: slot]
 
-        if let loadedAt = state.loadedAt,
-           !state.loadFailed,
-           now().timeIntervalSince(loadedAt) < RankingsSnapshot.maxAge {
+        if !state.loadFailed, RankingsSnapshot.isCurrent(loadedAt: state.loadedAt, now: now()) {
             return
         }
         await load(slot)

@@ -11,7 +11,7 @@ private struct HistoryChartScale: ViewModifier {
     @Environment(HistoryModel.self) private var model
 
     /// Room beside the first and last days, so the dots there aren't drawn over the edge.
-    private static let horizontalPadding: CGFloat = 6
+    private static let horizontalPadding: Double = 6
 
     func body(content: Content) -> some View {
         let series = model.series

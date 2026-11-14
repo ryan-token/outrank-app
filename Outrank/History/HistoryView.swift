@@ -12,6 +12,10 @@ struct HistoryView: View {
 
     @State private var isShowingPaywall = false
 
+    /// Owned here, above the screens that swap with access, so a screen pushed from one
+    /// of them can be popped when access changes.
+    @State private var path: [HistoryDestination] = []
+
     #if DEBUG
     @AppStorage(DebugSection.unlocksHistoryKey) private var isUnlockedForDebugging = false
     #endif
@@ -25,7 +29,7 @@ struct HistoryView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             switch access {
             case .subscribed:
                 HistoryContentView()
@@ -37,6 +41,10 @@ struct HistoryView: View {
                 // keeps a subscriber from being flashed the locked one.
                 ProgressView()
             }
+        }
+        .readsFoldDivision()
+        .onChange(of: access) {
+            path.removeAll()
         }
         .sheet(isPresented: $isShowingPaywall) {
             HistoryPaywallView()

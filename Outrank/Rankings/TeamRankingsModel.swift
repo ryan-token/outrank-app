@@ -43,17 +43,6 @@ final class TeamRankingsModel {
     /// rankings themselves, which would be compared element by element on every update.
     private(set) var revision = 0
 
-    /// When the rankings on screen were scraped; `nil` until the team's rankings load.
-    var lastUpdated: Date? {
-        snapshot?.scrapedAt
-    }
-
-    /// Whether the team is still waiting for its first rankings, as opposed to loaded or
-    /// failed. Refreshing already-loaded rankings doesn't count.
-    var isAwaitingFirstLoad: Bool {
-        snapshot == nil && !loadFailed
-    }
-
     private var snapshot: RankingsSnapshot?
 
     /// When `snapshot` arrived, for deciding whether it is still current.
@@ -123,7 +112,7 @@ final class TeamRankingsModel {
     /// - Returns: Whether new rankings loaded and are now on screen.
     @discardableResult
     func loadIfStale() async -> Bool {
-        if let loadedAt, !loadFailed, now().timeIntervalSince(loadedAt) < RankingsSnapshot.maxAge {
+        if !loadFailed, RankingsSnapshot.isCurrent(loadedAt: loadedAt, now: now()) {
             return false
         }
         return await load()

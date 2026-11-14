@@ -18,16 +18,16 @@ nonisolated enum ScreenshotFixtures {
 
     static func teamRankings(for team: String) async throws -> RankingsSnapshot {
         guard let ranks = teams[team] else { throw FixtureError.missing(team) }
-        return RankingsSnapshot(ranks: ranks, scrapedAt: scrapedAt)
+        return RankingsSnapshot(ranks: ranks)
     }
 
     static func statRankings(for stat: String) async throws -> RankingsSnapshot {
         guard let ranks = stats[stat] else { throw FixtureError.missing(stat) }
-        return RankingsSnapshot(ranks: ranks, scrapedAt: scrapedAt)
+        return RankingsSnapshot(ranks: ranks)
     }
 
     /// When the frozen rankings were scraped: 9:02 AM Central on October 23, 2026.
-    private static let scrapedAt = Date(timeIntervalSince1970: 1_792_764_120)
+    static let scrapedAt = Date(timeIntervalSince1970: 1_792_764_120)
 
     private static let teams: [String: [String: Int]] = [
         "Tulsa": [

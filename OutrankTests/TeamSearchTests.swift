@@ -9,7 +9,7 @@ import Testing
 struct TeamSearchTests {
     @Test func emptySearchShowsEveryTeam() {
         let search = TeamSearch()
-        search.text = "Tulsa"
+        search.text = "Zzz"
         search.text = ""
 
         #expect(search.matchingTeams == AllTeams.all)

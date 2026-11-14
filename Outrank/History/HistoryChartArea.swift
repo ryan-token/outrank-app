@@ -11,7 +11,7 @@ struct HistoryChartArea: View {
     @Environment(HistoryModel.self) private var model
 
     /// How tall to draw the chart. See `chartHeight(forScreenHeight:)`.
-    let chartHeight: CGFloat
+    let chartHeight: Double
 
     /// Incremented to retry.
     @Binding var reloadAttempt: Int
@@ -57,7 +57,7 @@ struct HistoryChartArea: View {
     /// fraction of one.
     ///
     /// Nonisolated because the geometry observer that calls it isn't confined to the main actor.
-    nonisolated static func chartHeight(forScreenHeight screenHeight: CGFloat) -> CGFloat {
+    nonisolated static func chartHeight(forScreenHeight screenHeight: Double) -> Double {
         min(max((screenHeight * 0.3).rounded(), 160), 380)
     }
 

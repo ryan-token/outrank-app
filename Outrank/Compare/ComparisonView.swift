@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct ComparisonView: View {
-    @Environment(\.scenePhase) private var scenePhase
-
     @State private var model = ComparisonModel()
     @State private var presentedPicker: ComparisonSlot?
     @State private var isShowingInfoSheet = false
@@ -63,12 +61,7 @@ struct ComparisonView: View {
                 InfoView(source: .compare)
                     .presentationDetents([.medium, .large])
             }
-            .task(id: ComparisonLoadKey(
-                teamOne: model.teamOne,
-                teamTwo: model.teamTwo,
-                isActive: scenePhase == .active
-            )) {
-                guard scenePhase == .active else { return }
+            .refreshTask(id: [model.teamOne, model.teamTwo]) {
                 await model.loadStaleTeams()
             }
         }

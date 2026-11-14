@@ -7,10 +7,14 @@ import SwiftUI
 
 /// One stat in the stat picker, checked when it is the one being charted.
 struct HistoryStatRow: View {
+    @Environment(HistoryModel.self) private var model
+
     let stat: String
-    let isSelected: Bool
 
     var body: some View {
+        // Read here, not in the list, so choosing a stat updates the rows and not the list.
+        let isSelected = stat == model.stat
+
         HStack {
             Text(Conversions.humanReadableStat(for: stat))
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -30,7 +34,8 @@ struct HistoryStatRow: View {
 
 #Preview {
     List {
-        HistoryStatRow(stat: "ScoringOffense", isSelected: true)
-        HistoryStatRow(stat: "TotalDefense", isSelected: false)
+        HistoryStatRow(stat: HistoryModel.defaultStat)
+        HistoryStatRow(stat: "TotalDefense")
     }
+    .environment(HistoryModel())
 }

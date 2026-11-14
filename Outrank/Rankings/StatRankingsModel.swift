@@ -17,11 +17,19 @@ final class StatRankingsModel {
     /// Changes whenever `entries` does, giving views a cheap value to animate on.
     private(set) var revision = 0
 
+    /// When `entries` arrived, for deciding whether they are still current.
+    @ObservationIgnored private var loadedAt: Date?
+
     @ObservationIgnored private let fetch: (String) async throws -> RankingsSnapshot
+    @ObservationIgnored private let now: () -> Date
 
     private static let logger = Logger(category: "StatRankingsModel")
 
-    init(fetch: @escaping (String) async throws -> RankingsSnapshot = RankingsAPI.statRankings(for:)) {
+    init(
+        fetch: @escaping (String) async throws -> RankingsSnapshot = RankingsAPI.statRankings(for:),
+        now: @escaping () -> Date = Date.init
+    ) {
+        self.now = now
         #if DEBUG
         // Screenshots load frozen rankings rather than calling the API.
         self.fetch = ScreenshotMode.isEnabled ? ScreenshotFixtures.statRankings(for:) : fetch
@@ -41,6 +49,7 @@ final class StatRankingsModel {
                 RankingEntry(id: team, title: team, ranking: snapshot.ranks[team])
             }
             entries = SortMethod.byRankingAscending.sorted(unsorted)
+            loadedAt = now()
             loadFailed = false
             revision += 1
         } catch {
@@ -48,5 +57,14 @@ final class StatRankingsModel {
             Self.logger.error("Failed to load rankings for \(stat, privacy: .public): \(String(describing: error))")
             loadFailed = true
         }
+    }
+
+    /// Loads unless the rankings on screen are still current, so returning to the app
+    /// doesn't refetch what it just loaded.
+    func loadIfStale(stat: String) async {
+        if !loadFailed, RankingsSnapshot.isCurrent(loadedAt: loadedAt, now: now()) {
+            return
+        }
+        await load(stat: stat)
     }
 }

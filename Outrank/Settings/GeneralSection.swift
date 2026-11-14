@@ -10,11 +10,21 @@ import SwiftUI
 struct GeneralSection: View {
     @Binding var isShowingAbout: Bool
 
+    /// When the backend last refreshed the rankings; `nil` until Settings has loaded it.
+    let rankingsLastUpdated: Date?
+
+    private static let lastUpdatedFormat = Date.FormatStyle.dateTime
+        .weekday(.abbreviated)
+        .month(.abbreviated)
+        .day()
+        .hour()
+        .minute()
+
     @Environment(\.openURL) private var openURL
     @State private var isShowingPrivacyDialog = false
 
     var body: some View {
-        Section("General") {
+        Section {
             Link(destination: AppLinks.featureRequest) {
                 SettingsRow(
                     icon: "bolt.square.fill",
@@ -40,6 +50,12 @@ struct GeneralSection: View {
             ) {
                 Button("Terms of Use", action: openTermsOfUse)
                 Button("Privacy Policy", action: openPrivacyPolicy)
+            }
+        } header: {
+            Text("General")
+        } footer: {
+            if let rankingsLastUpdated {
+                Text("Rankings last updated \(rankingsLastUpdated, format: Self.lastUpdatedFormat)")
             }
         }
     }

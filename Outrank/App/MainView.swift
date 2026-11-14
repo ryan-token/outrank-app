@@ -8,10 +8,9 @@
 import SwiftUI
 
 struct MainView: View {
-    // Scene storage, so each window keeps its own place and gets it back when the
-    // system discards and restores the scene.
-    @SceneStorage("ActiveTab") private var activeTab = AppTab.rankings
-    @SceneStorage("SettingsDetail") private var settingsDetail: SettingsDetail?
+    // Each window has its own place while it is open, and starts at the last one saved.
+    @State private var activeTab = LastPlace.tab
+    @State private var settingsDetail: SettingsDetail?
 
     @State private var router = WindowRouter()
 
@@ -34,21 +33,28 @@ struct MainView: View {
             }
         }
         .environment(router)
-        // The selection lives in scene storage, which the router can't write, so the
-        // window applies each request here.
+        .onChange(of: activeTab) { LastPlace.tab = activeTab }
+        .onChange(of: settingsDetail) { LastPlace.settingsDetail = settingsDetail }
+        // The selection is this window's own state, so the window applies each request here.
         .onChange(of: router.requestedSettingsDetail) { _, detail in
             guard let detail else { return }
             activeTab = .settings
             settingsDetail = detail
             router.clearRequest()
         }
-        #if DEBUG
         .onAppear {
+            // Set once the tab is on screen: a split view doesn't present a destination
+            // whose item is already set when it first appears.
+            if activeTab == .settings {
+                settingsDetail = LastPlace.settingsDetail
+            }
+
+            #if DEBUG
             if let tab = ScreenshotMode.tab {
                 activeTab = tab
             }
+            #endif
         }
-        #endif
     }
 }
 

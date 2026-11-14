@@ -15,7 +15,7 @@ import SwiftUI
 /// and policy links. A purchase or a restore made here arrives at `Store` through its
 /// listeners.
 struct SubscriptionOptionsView<Header: View>: View {
-    @ViewBuilder let header: Header
+    @ContentBuilder let header: Header
 
     var body: some View {
         SubscriptionStoreView(productIDs: SubscriptionTier.productIDs) {

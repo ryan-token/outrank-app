@@ -145,6 +145,8 @@ final class Store {
             subscriptionIDs.insert(transaction.productID)
         }
 
+        // A cancelled check may have stopped before reading every entitlement.
+        guard !Task.isCancelled else { return }
         // A check that started after this one read entitlements at least as new.
         guard check > newestEntitlementCheckApplied else { return }
         newestEntitlementCheckApplied = check

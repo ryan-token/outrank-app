@@ -11,6 +11,7 @@ struct SettingsSidebar: View {
     @Binding var selectedDetail: SettingsDetail?
 
     @State private var isShowingAbout = false
+    @State private var lastUpdated = LastUpdatedModel()
 
     @Environment(\.splitViewIsCollapsed) private var splitViewIsCollapsed
 
@@ -20,10 +21,13 @@ struct SettingsSidebar: View {
         List(selection: .constant(splitViewIsCollapsed ? nil : selectedDetail)) {
             PreferencesSection(selectedDetail: $selectedDetail)
             SupportSection(selectedDetail: $selectedDetail)
-            GeneralSection(isShowingAbout: $isShowingAbout)
+            GeneralSection(isShowingAbout: $isShowingAbout, rankingsLastUpdated: lastUpdated.date)
             #if DEBUG
             DebugSection()
             #endif
+        }
+        .refreshTask {
+            await lastUpdated.load()
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)

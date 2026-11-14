@@ -14,7 +14,7 @@ import SwiftUI
 struct SidebarRow<Value: Hashable, Label: View>: View {
     let value: Value
     @Binding var selection: Value?
-    @ViewBuilder var label: Label
+    @ContentBuilder var label: Label
 
     @Environment(\.splitViewIsCollapsed) private var splitViewIsCollapsed
 
@@ -25,7 +25,8 @@ struct SidebarRow<Value: Hashable, Label: View>: View {
             HStack {
                 label
 
-                // Beside the sidebar, the highlighted row says which screen is showing.
+                // A chevron only where rows push. Beside the sidebar, the highlighted row
+                // says which screen is showing.
                 if splitViewIsCollapsed {
                     Image(systemName: "chevron.forward")
                         .font(.footnote)

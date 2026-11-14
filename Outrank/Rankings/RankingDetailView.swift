@@ -68,9 +68,9 @@ struct RankingDetailView: View {
         }
         // Keyed on the retry counter, so tapping "Try Again" restarts a task SwiftUI still
         // owns and cancels, rather than an unstructured one. The stat itself never changes
-        // for this view: the detail column gives each stat its own identity with `.id`.
-        .task(id: reloadAttempt) {
-            await model.load(stat: stat)
+        // for this view: `RankingsDetailDestination` gives each stat its own identity with `.id`.
+        .refreshTask(id: reloadAttempt) {
+            await model.loadIfStale(stat: stat)
         }
     }
 }

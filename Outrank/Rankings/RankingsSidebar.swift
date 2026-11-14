@@ -35,11 +35,7 @@ struct RankingsSidebar: View {
                         .foregroundStyle(.secondary)
                 }
             } header: {
-                RankingsListHeader(
-                    lastUpdated: model.lastUpdated,
-                    isLoading: model.isAwaitingFirstLoad,
-                    sortLabel: model.sortMethod.sectionLabel()
-                )
+                Text("Sorted by \(model.sortMethod.sectionLabel())")
             }
         }
         .refreshable {

@@ -53,7 +53,7 @@ nonisolated enum RankingsAPI {
 
     private static let baseURL: URL = {
         // A fixed literal, so a failure here is a typo caught the first time the app runs.
-        guard let url = URL(string: "https://8e7g6ojh8b.execute-api.us-east-2.amazonaws.com/v2") else {
+        guard let url = URL(string: "https://api.outrankapp.com/v2") else {
             preconditionFailure("Malformed rankings API URL.")
         }
         return url

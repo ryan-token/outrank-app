@@ -18,8 +18,8 @@ struct HistoryMarks: ChartContent {
 
     /// Symbol areas, in points squared: a dot barely wider than the line for a lone ranked
     /// day, and a larger one that marks where the line ends.
-    private static let isolatedPointArea: CGFloat = 20
-    private static let latestPointArea: CGFloat = 60
+    private static let isolatedPointArea: Double = 20
+    private static let latestPointArea: Double = 60
 
     var body: some ChartContent {
         LinePlot(

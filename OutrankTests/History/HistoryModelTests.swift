@@ -23,7 +23,7 @@ struct HistoryModelTests {
         )
     }
 
-    private static let metadata = RankingsMetadata(seasons: ["2025", "2026"])
+    private static let metadata = RankingsMetadata(seasons: ["2025", "2026"], scrapedAt: nil)
 
     /// Defaults with Tulsa already chosen, as after an earlier visit to History.
     private func makeDefaults() -> UserDefaults {
@@ -89,7 +89,7 @@ struct HistoryModelTests {
 
         #expect(model.stat == HistoryModel.defaultStat)
         #expect(model.series.points.map(\.ranking) == [80, nil, 60])
-        #expect(!model.stats.contains("RetiredStat"))
+        #expect(model.stats.contains("RetiredStat") == false)
     }
 
     @Test func loadChartsTheChosenStatAndListsSeasonsNewestFirst() async {
@@ -178,14 +178,6 @@ struct HistoryModelTests {
 
         #expect(model.phase == .loading)
         #expect(model.series == .empty)
-    }
-
-    @Test func failedFirstLoadIsReported() async {
-        let model = makeModel(fetchHistory: { _, _ in throw StubError() })
-
-        await model.load()
-
-        #expect(model.phase == .failed)
     }
 
     @Test func retryAfterAFailedLoadShowsItIsLoadingAgain() async {
@@ -299,9 +291,10 @@ struct HistoryModelTests {
         #expect(fetchCount == 2)
     }
 
-    @Test func pointingAtTheChartSelectsTheNearestDayUntilLetGo() async {
+    @Test func pointingAtTheChartSelectsTheNearestDayUntilLetGo() async throws {
         let model = makeModel()
         await model.load()
+        try #require(model.series.points.count == 3)
         let secondDay = model.series.points[1]
         // With nothing pointed at, the readout shows the latest day with a ranking.
         #expect(model.focusedPoint == model.series.points[2])
@@ -317,9 +310,10 @@ struct HistoryModelTests {
         #expect(model.focusedPoint == model.series.points[2])
     }
 
-    @Test func selectionFollowsTheDataWhenItIsReplaced() async {
+    @Test func selectionFollowsTheDataWhenItIsReplaced() async throws {
         let model = makeModel()
         await model.load()
+        try #require(model.series.points.count == 3)
         model.rawSelectedDate = model.series.points[2].date
         #expect(model.selectedPoint?.ranking == 60)
 

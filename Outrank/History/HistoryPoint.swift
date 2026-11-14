@@ -20,9 +20,9 @@ nonisolated struct HistoryPoint: Equatable, Sendable {
         ranking.map(Double.init) ?? .nan
     }
 
-    /// The ranking as text, such as "34th", or "Not ranked" for a day without one.
+    /// The ranking as text, such as "34th", or "Unknown" for a day without one.
     var rankingDescription: String {
-        ranking.map { Conversions.humanReadableRanking(for: $0) } ?? "Not ranked"
+        Conversions.humanReadableRanking(for: ranking)
     }
 
     // The chart reads these for each point by key path, so VoiceOver and Audio Graphs can
