@@ -22,12 +22,11 @@ struct AboutView: View {
 
                 Section {
                     Text("""
-                        I built Outrank because I needed it. I wanted a quick way to find where my \
-                        favorite teams stacked up, but couldn't find a service that provided it.
+                        I built Outrank because I needed it. I wanted a way to quickly & easily find where my \
+                        favorite teams stacked up, but nothing out there was any good.
                         """)
                     Text("""
-                        The app is free with no ads. It makes me no money by default. If you enjoy \
-                        Outrank I'd love it if you left a tip or subscribed :)
+                        This is a passion project that I've put a lot of care into over the years. I hope you enjoy it.
                         """)
                 }
 

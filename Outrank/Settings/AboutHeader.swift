@@ -12,11 +12,12 @@ struct AboutHeader: View {
 
     var body: some View {
         VStack {
+            // A render of the app icon that already carries the system icon shape
+            // and glass edges, so it needs no clipping here.
             Image(.outrank)
                 .resizable()
                 .scaledToFit()
                 .frame(width: iconSize, height: iconSize)
-                .clipShape(.rect(cornerRadius: iconSize / 5))
                 .accessibilityHidden(true)
 
             Text("Outrank")
