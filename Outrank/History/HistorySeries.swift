@@ -108,26 +108,19 @@ nonisolated struct HistorySeries: Equatable, Sendable {
         return date.timeIntervalSince(earlier.date) <= later.date.timeIntervalSince(date) ? earlier : later
     }
 
-    /// The days of a season worth plotting, parsed from the API's `yyyy-MM-dd` strings as
-    /// the start of each day in `timeZone`, so each lands on the day it names wherever
-    /// the user is.
+    /// The days of a season, parsed from the API's `yyyy-MM-dd` strings as the start of each
+    /// day in `timeZone`, so each lands on the day it names wherever the user is.
     ///
-    /// The backend keeps recording through the offseason, when nothing changes, so the
-    /// days stop at the end of the January after kickoff: bowl season and the playoff are
-    /// over by then. The result is always a leading run of `dates`, which keeps it lined
-    /// up by position with the rankings recorded for them.
-    static func days(from dates: [String], season: String, timeZone: TimeZone) -> [Date] {
+    /// Every day the backend sends is plotted: it decides where a season ends. The result
+    /// is always a leading run of `dates`, which keeps it lined up by position with the
+    /// rankings recorded for them.
+    static func days(from dates: [String], timeZone: TimeZone) -> [Date] {
         let strategy = Date.ISO8601FormatStyle(timeZone: timeZone).year().month().day()
-        // The cutoff is read the way the days are, never built in the user's calendar: a
-        // Buddhist or Hebrew one would take the season's year for a year of its own era.
-        let seasonEnd = Int(season).flatMap { kickoffYear in
-            try? Date("\(kickoffYear + 1)-02-01", strategy: strategy)
-        } ?? .distantFuture
 
         var days: [Date] = []
         days.reserveCapacity(dates.count)
         for date in dates {
-            guard let day = try? Date(date, strategy: strategy), day < seasonEnd else { break }
+            guard let day = try? Date(date, strategy: strategy) else { break }
             days.append(day)
         }
         return days

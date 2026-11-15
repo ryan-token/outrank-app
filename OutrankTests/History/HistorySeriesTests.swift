@@ -23,23 +23,18 @@ struct HistorySeriesTests {
         return HistorySeries(title: "Scoring Offense", days: days, rankings: rankings)
     }
 
-    @Test func daysAreLocalCalendarDaysAndStopWhenTheSeasonIsOver() throws {
-        let days = HistorySeries.days(
-            from: ["2025-09-06", "2026-01-31", "2026-02-01", "2026-09-05"],
-            season: "2025",
-            timeZone: Self.calendar.timeZone
-        )
+    @Test func daysAreLocalCalendarDaysForAsLongAsTheBackendSendsThem() throws {
+        let days = HistorySeries.days(from: ["2025-09-06", "2026-02-03"], timeZone: Self.calendar.timeZone)
 
         let kickoff = try #require(Self.calendar.date(from: DateComponents(year: 2025, month: 9, day: 6)))
-        let endOfJanuary = try #require(Self.calendar.date(from: DateComponents(year: 2026, month: 1, day: 31)))
-        // The backend keeps recording through the offseason, when nothing changes.
-        #expect(days == [kickoff, endOfJanuary])
+        // The backend decides where a season ends, such as after a title game in February.
+        let titleGame = try #require(Self.calendar.date(from: DateComponents(year: 2026, month: 2, day: 3)))
+        #expect(days == [kickoff, titleGame])
     }
 
     @Test func daysStopAtADateThatCannotBeReadSoTheyStayLinedUpWithRankings() {
         let days = HistorySeries.days(
             from: ["2025-09-06", "not a date", "2025-09-08"],
-            season: "2025",
             timeZone: Self.calendar.timeZone
         )
 

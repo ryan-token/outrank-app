@@ -17,7 +17,6 @@ struct ListTipOptionsView: View {
     @State private var errorTrigger = 0
 
     let product: Product
-    var purchasingEnabled = true
 
     private static let logger = Logger(category: "ListTipOptionsView")
 
@@ -29,17 +28,15 @@ struct ListTipOptionsView: View {
 
             ProductDetail(product: product)
 
-            if purchasingEnabled {
-                Spacer()
+            Spacer()
 
-                Button(action: purchase) {
-                    Text(product.wholeCurrencyPrice)
-                        .foregroundStyle(.white)
-                        .bold()
-                }
-                .buttonStyle(.buy)
-                .accessibilityLabel("Tip \(product.displayPrice)")
+            Button(action: purchase) {
+                Text(product.wholeCurrencyPrice)
+                    .foregroundStyle(.white)
+                    .bold()
             }
+            .buttonStyle(.buy)
+            .accessibilityLabel("Tip \(product.displayPrice)")
         }
         .alert("Your purchase could not be completed. Please try again.", isPresented: $isShowingError) { }
         .sensoryFeedback(.success, trigger: purchaseTrigger)

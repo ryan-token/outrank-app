@@ -30,6 +30,7 @@ struct SubscriptionsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task(id: SubscriptionStatusKey(
             activeSubscriptionIDs: store.activeSubscriptionIDs,
+            statusRevision: store.subscriptionStatusRevision,
             hasLoadedProducts: !store.subscriptions.isEmpty
         )) {
             await updateSubscriptionStatus()

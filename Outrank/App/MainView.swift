@@ -47,6 +47,10 @@ struct MainView: View {
             // whose item is already set when it first appears.
             if activeTab == .settings {
                 settingsDetail = LastPlace.settingsDetail
+            } else {
+                // The page is only saved when it changes, so one left open behind another
+                // tab would otherwise come back the next time the app launches into Settings.
+                LastPlace.settingsDetail = nil
             }
 
             #if DEBUG

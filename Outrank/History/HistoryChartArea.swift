@@ -25,10 +25,11 @@ struct HistoryChartArea: View {
                     .frame(height: chartHeight)
             case .failed:
                 ContentUnavailableView {
-                    // Not a Wi-Fi symbol: the model doesn't know why the load failed.
+                    // Not a Wi-Fi symbol or a word about the connection: the model doesn't
+                    // know why the load failed.
                     Label("Couldn't Load History", systemImage: "exclamationmark.triangle")
                 } description: {
-                    Text("Check your connection and try again.")
+                    Text("Please try again.")
                 } actions: {
                     Button("Try Again", action: retry)
                         .buttonStyle(.bordered)

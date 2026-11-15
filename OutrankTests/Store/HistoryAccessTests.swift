@@ -11,8 +11,9 @@ import Testing
 @testable import Outrank
 
 /// History is included with every subscription and with nothing else. These run the real
-/// `Store` against StoreKit's local test environment, using the app's own product
-/// configuration, so they cover what the App Store would actually report.
+/// `Store` against StoreKit's local test environment, with a configuration of the app's
+/// products that ships in the test bundle only, so they cover what the App Store would
+/// actually report.
 ///
 /// The test environment's purchases are shared by the whole process, so the tests can't
 /// run side by side. Every one of them waits on StoreKit, so each gets a time limit in
@@ -28,7 +29,7 @@ struct HistoryAccessTests {
     private let store: Store
 
     init() async throws {
-        let configuration = try #require(Bundle.main.url(forResource: "Products", withExtension: "storekit"))
+        let configuration = try #require(Bundle.tests.url(forResource: "Products", withExtension: "storekit"))
         session = try SKTestSession(contentsOf: configuration)
         session.resetToDefaultState()
         session.clearTransactions()
@@ -98,6 +99,26 @@ struct HistoryAccessTests {
         await accessBecomes(.notSubscribed)
 
         #expect(store.subscriptionAccess == .notSubscribed)
+    }
+
+    // Turning off renewal, as the Manage Subscription sheet does, leaves the user subscribed,
+    // so nothing else the store publishes changes. The Subscriptions screen reloads its
+    // status on this alone.
+    @Test func turningOffRenewalIsReportedAsAStatusChange() async throws {
+        let subscription = try #require(store.subscriptions.first)
+        let transaction = try #require(try await store.purchase(subscription))
+        // Purchasing reports changes of its own; let them arrive first.
+        try await AppStore.sync()
+        let revision = store.subscriptionStatusRevision
+
+        try session.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
+        try await AppStore.sync()
+
+        let store = store
+        for await current in Observations({ store.subscriptionStatusRevision }) where current > revision {
+            break
+        }
+        #expect(store.subscriptionAccess == .subscribed)
     }
 
     /// Suspends until the store reports `access`.

@@ -17,8 +17,13 @@ nonisolated struct TeamRankingsProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping @Sendable (TeamRankingsEntry) -> Void) {
-        // In the gallery there is no time to hit the network, so show sample data.
-        completion(TeamRankingsEntry(date: .now, team: Self.selectedTeam, rankings: Self.sampleRankings))
+        // A snapshot has to arrive at once, so it never waits on the network. The gallery
+        // shows sample data; anywhere else it shows the last rankings fetched, when there
+        // are any, so the widget doesn't flash a made-up team's numbers.
+        let team = Self.selectedTeam
+        let cached = Self.cachedRankings(for: team)
+        let rankings = context.isPreview || cached.isEmpty ? Self.sampleRankings : cached
+        completion(TeamRankingsEntry(date: .now, team: team, rankings: rankings))
     }
 
     // TimelineProvider only offers the completion-handler form, so bridge to async here.

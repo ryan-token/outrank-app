@@ -27,7 +27,7 @@ struct SettingsSidebar: View {
             #endif
         }
         .refreshTask {
-            await lastUpdated.load()
+            await lastUpdated.loadIfStale()
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)

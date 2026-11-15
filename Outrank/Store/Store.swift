@@ -20,6 +20,11 @@ final class Store {
     /// The subscriptions the user holds right now.
     private(set) var activeSubscriptionIDs: Set<String> = []
 
+    /// Counts the changes StoreKit reports to a subscription's status. Some leave
+    /// `activeSubscriptionIDs` as it was, such as turning off renewal, so a screen that
+    /// shows the status reloads on this.
+    private(set) var subscriptionStatusRevision = 0
+
     /// Whether the user holds any subscription, which unlocks History.
     private(set) var subscriptionAccess = SubscriptionAccess.unknown
 
@@ -76,6 +81,7 @@ final class Store {
     private func listenForStatusChanges() -> Task<Void, Never> {
         Task { [weak self] in
             for await _ in Product.SubscriptionInfo.Status.updates {
+                self?.subscriptionStatusRevision += 1
                 await self?.refreshEntitlements()
             }
         }

@@ -168,7 +168,7 @@ final class HistoryModel {
             // own load will supply the history.
             guard !Task.isCancelled, requestedTeam == team, requestedSeason == season else { return }
             self.history = history
-            days = HistorySeries.days(from: history.dates, season: history.season, timeZone: timeZone)
+            days = HistorySeries.days(from: history.dates, timeZone: timeZone)
             loadedAt = now()
             phase = .loaded
             // The list can be missing this season: the backend may not have supplied the
