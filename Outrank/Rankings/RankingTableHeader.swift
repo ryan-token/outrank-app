@@ -17,16 +17,12 @@ struct RankingTableHeader: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if let longestValue {
-                RankingTableCell(column: .value(longest: longestValue)) {
-                    Text(RankingTableColumn.value(longest: longestValue).title)
-                }
+                RankingTableCell(heading: .value(longest: longestValue))
             }
 
-            RankingTableCell(column: .ranking) {
-                Text(RankingTableColumn.ranking.title)
-            }
+            RankingTableCell(heading: .ranking)
         }
-        .font(RankingTableCell<Text>.headingFont)
+        .font(RankingTableColumn.headingFont)
         .foregroundStyle(.secondary)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)

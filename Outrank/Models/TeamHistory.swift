@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import OSLog
 
 /// One team's ranking and value in every stat on each day of a season.
 nonisolated struct TeamHistory: Decodable, Equatable, Sendable {
@@ -29,6 +30,8 @@ nonisolated struct TeamHistory: Decodable, Equatable, Sendable {
         self.values = values
     }
 
+    private static let logger = Logger(category: "TeamHistory")
+
     private enum CodingKeys: CodingKey {
         case season
         case dates
@@ -41,7 +44,13 @@ nonisolated struct TeamHistory: Decodable, Equatable, Sendable {
         season = try container.decode(String.self, forKey: .season)
         dates = try container.decode([String].self, forKey: .dates)
         ranks = try container.decode([String: [Int?]].self, forKey: .ranks)
-        // A backend from before values were stored sends none.
-        values = try container.decodeIfPresent([String: [Double?]].self, forKey: .values) ?? [:]
+        // A backend from before values were stored sends none. Values that can't be read
+        // are left out too: rankings are worth showing without them.
+        do {
+            values = try container.decodeIfPresent([String: [Double?]].self, forKey: .values) ?? [:]
+        } catch {
+            Self.logger.error("Ignoring values that could not be decoded: \(String(describing: error))")
+            values = [:]
+        }
     }
 }

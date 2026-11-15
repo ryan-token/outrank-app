@@ -37,6 +37,17 @@ struct RankingsAPITests {
         #expect(snapshot.values == ["ScoringOffense": 33.6, "ThirdDownConversionPct": 0.331])
     }
 
+    // Values are an extra beside the rankings, so a response whose values have gone wrong
+    // still shows its rankings.
+    @Test func rankingsSurviveValuesThatCannotBeDecoded() throws {
+        let json = Data(#"{"ranks":{"ScoringOffense":34},"values":{"ScoringOffense":"33.6"}}"#.utf8)
+
+        let snapshot: RankingsSnapshot = try RankingsAPI.decode(from: json)
+
+        #expect(snapshot.ranks == ["ScoringOffense": 34])
+        #expect(snapshot.values.isEmpty)
+    }
+
     @Test func decodesMetadata() throws {
         let json = Data(#"""
             {"version":"9bfe9fc","date":"2026-11-14","scrapedAt":"2026-11-14T00:18:38.816Z","season":"2026",

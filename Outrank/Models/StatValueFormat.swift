@@ -25,6 +25,11 @@ nonisolated enum StatValueFormat: Equatable, Sendable {
     /// A stat this version of the app doesn't list, shown with whatever decimals it has.
     case unlisted
 
+    /// Values are written the way ncaa.com prints them, whatever the device's region: the
+    /// app is in English alone, and its rankings ("67th") are spelled out in English beside
+    /// them.
+    private static let locale = Locale(identifier: "en_US")
+
     /// A team's value, such as "534.7", with the same number of decimal places for every
     /// team so a list of them lines up.
     func string(for value: Double) -> String {
@@ -35,12 +40,13 @@ nonisolated enum StatValueFormat: Equatable, Sendable {
 
         return switch self {
         case .count, .decimal, .unlisted:
-            value.formatted(.number.precision(precision))
+            value.formatted(.number.precision(precision).locale(Self.locale))
         case .percent:
-            value.formatted(.percent.precision(precision))
+            value.formatted(.percent.precision(precision).locale(Self.locale))
         case .minutes:
             Measurement(value: value, unit: UnitDuration.minutes).formatted(
                 .measurement(width: .abbreviated, usage: .asProvided, numberFormatStyle: .number.precision(precision))
+                .locale(Self.locale)
             )
         }
     }

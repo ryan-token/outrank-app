@@ -37,6 +37,18 @@ struct StatRankingsModelTests {
         #expect(model.longestValue == "100.0%")
     }
 
+    // A minus sign is narrower than a digit, so a column sized to "-0.83" would be too
+    // narrow for "15.40", which has as many characters.
+    @Test func tableMakesRoomForTheWidestValueNotTheOneWithTheMostCharacters() async {
+        let model = StatRankingsModel { _ in
+            .stub(["Houston": 1, "Tulsa": 2, "UTEP": 138], values: ["Houston": -0.83, "Tulsa": -0.5, "UTEP": 15.4])
+        }
+
+        await model.load(stat: "PuntReturnDefense")
+
+        #expect(model.longestValue == "15.40")
+    }
+
     @Test func teamTheAppDoesNotKnowStillGetsARow() async {
         let model = StatRankingsModel { _ in .stub(["New Program": 1]) }
 

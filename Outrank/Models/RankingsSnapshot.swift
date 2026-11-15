@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import OSLog
 
 /// The rankings from one scrape of ncaa.com, with the stat values behind them: either one
 /// team's in every stat, or every team's in one stat.
@@ -34,6 +35,8 @@ nonisolated struct RankingsSnapshot: Decodable, Equatable, Sendable {
         self.values = values
     }
 
+    private static let logger = Logger(category: "RankingsSnapshot")
+
     private enum CodingKeys: CodingKey {
         case ranks
         case values
@@ -42,7 +45,13 @@ nonisolated struct RankingsSnapshot: Decodable, Equatable, Sendable {
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         ranks = try container.decode([String: Int].self, forKey: .ranks)
-        // The backend leaves `values` out of rankings it scraped before it read them.
-        values = try container.decodeIfPresent([String: Double].self, forKey: .values) ?? [:]
+        // The backend leaves `values` out of rankings it scraped before it read them. Values
+        // that can't be read are left out too: rankings are worth showing without them.
+        do {
+            values = try container.decodeIfPresent([String: Double].self, forKey: .values) ?? [:]
+        } catch {
+            Self.logger.error("Ignoring values that could not be decoded: \(String(describing: error))")
+            values = [:]
+        }
     }
 }

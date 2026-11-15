@@ -23,12 +23,5 @@ nonisolated struct RankingEntry: Identifiable, Equatable, Sendable {
 
     /// The stat value behind the ranking, formatted for display, such as "534.7". `nil`
     /// when there is none to show, or on a screen that lists rankings alone.
-    let value: String?
-
-    init(id: String, title: String, ranking: Int?, value: String? = nil) {
-        self.id = id
-        self.title = title
-        self.ranking = ranking
-        self.value = value
-    }
+    var value: String?
 }

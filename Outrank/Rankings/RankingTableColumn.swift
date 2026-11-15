@@ -13,6 +13,9 @@ enum RankingTableColumn {
 
     case ranking
 
+    /// What the table's headings are set in: the size of the names under them, and heavier.
+    static let headingFont = Font.headline
+
     var title: LocalizedStringResource {
         switch self {
         case .value: "Value"

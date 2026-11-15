@@ -15,9 +15,6 @@ struct RankingTableCell<Content: View>: View {
     let column: RankingTableColumn
     @ViewBuilder var content: Content
 
-    /// What the table's headings are set in: the size of the names under them, and heavier.
-    static var headingFont: Font { .headline }
-
     /// Last place in the FBS field, the ranking with the most digits.
     private static var longestRanking: String {
         Conversions.humanReadableRanking(for: AllTeams.all.count)
@@ -27,7 +24,7 @@ struct RankingTableCell<Content: View>: View {
         ZStack(alignment: column.alignment) {
             Group {
                 Text(column.title)
-                    .font(Self.headingFont)
+                    .font(RankingTableColumn.headingFont)
 
                 // The selected team's row is set in the headline font, the widest there is.
                 Group {
@@ -44,6 +41,15 @@ struct RankingTableCell<Content: View>: View {
             .hidden()
 
             content
+        }
+    }
+}
+
+extension RankingTableCell where Content == Text {
+    /// The heading over a column.
+    init(heading column: RankingTableColumn) {
+        self.init(column: column) {
+            Text(column.title)
         }
     }
 }
