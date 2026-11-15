@@ -32,7 +32,7 @@ final class ModelReference<Model: AnyObject> {
 }
 
 extension RankingsSnapshot {
-    static func stub(_ ranks: [String: Int] = [:]) -> Self {
-        RankingsSnapshot(ranks: ranks)
+    static func stub(_ ranks: [String: Int] = [:], values: [String: Double] = [:]) -> Self {
+        RankingsSnapshot(ranks: ranks, values: values)
     }
 }

@@ -1,0 +1,44 @@
+//
+//  StatValueFormatTests.swift
+//  OutrankTests
+//
+
+import Foundation
+import Testing
+@testable import Outrank
+
+struct StatValueFormatTests {
+    // The backend sends a plain number for every stat, so these are the ways one has to
+    // come out differently: a percentage from a fraction, decimals kept on a round number,
+    // and none invented for a stat the app doesn't list.
+    @Test(arguments: [
+        (StatValueFormat.count, 13.0, "13"),
+        (.decimal(places: 1), 373.0, "373.0"),
+        (.decimal(places: 2), 0.3, "0.30"),
+        (.decimal(places: 2), -1.2, "-1.20"),
+        (.percent, 0.589, "58.9%"),
+        (.percent, 1.0, "100.0%"),
+        (.minutes, 36.7, "36.7 min"),
+        (.unlisted, 12.5, "12.5"),
+        (.unlisted, 4.0, "4")
+    ])
+    func valueReadsTheWayNcaaPrintsIt(format: StatValueFormat, value: Double, expected: String) {
+        #expect(format.string(for: value) == expected)
+    }
+
+    @Test(arguments: [
+        (StatValueFormat.decimal(places: 1), 500.0, "500"),
+        (.decimal(places: 1), 32.5, "32.5"),
+        (.percent, 0.55, "55%"),
+        (.minutes, 30.0, "30 min")
+    ])
+    func roundNumberOnAChartScaleDropsItsDecimals(format: StatValueFormat, value: Double, expected: String) {
+        #expect(format.axisLabel(for: value) == expected)
+    }
+
+    // The formats are keyed by stat name in a table of their own, where a misspelled or
+    // forgotten stat would quietly show the wrong number of decimals.
+    @Test func everyStatTheAppListsHasAFormat() {
+        #expect(AllStats.all.filter { AllStats.valueFormat(for: $0) == .unlisted } == [])
+    }
+}

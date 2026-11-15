@@ -81,6 +81,11 @@ final class TeamRankingsModel {
         snapshot?.ranks[stat]
     }
 
+    /// The team's value in a stat, formatted for display, or `nil` when it has none.
+    func value(forStat stat: String) -> String? {
+        AllStats.formattedValue(snapshot?.values[stat], for: stat)
+    }
+
     /// Fetches the current team's rankings.
     /// - Returns: Whether the rankings loaded and are now on screen.
     @discardableResult

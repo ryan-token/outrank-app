@@ -20,6 +20,9 @@ private struct HistoryChartAxes: ViewModifier {
 
     func body(content: Content) -> some View {
         let selectedPoint = model.selectedPoint
+        let metric = model.plottedMetric
+        let valueFormat = model.series.valueFormat
+        let valueTicks = model.series.valueScale?.ticks ?? []
 
         content
             .chartXAxis {
@@ -33,18 +36,30 @@ private struct HistoryChartAxes: ViewModifier {
                 }
             }
             .chartYAxis {
-                AxisMarks(values: model.series.axisRankings) { value in
-                    AxisGridLine()
-                    AxisValueLabel {
-                        if let ranking = value.as(Double.self) {
-                            Text(Conversions.humanReadableRanking(for: Int(ranking)))
+                switch metric {
+                case .ranking:
+                    AxisMarks(values: model.series.axisRankings) { value in
+                        AxisGridLine()
+                        AxisValueLabel {
+                            if let ranking = value.as(Double.self) {
+                                Text(Conversions.humanReadableRanking(for: Int(ranking)))
+                            }
+                        }
+                    }
+                case .value:
+                    AxisMarks(values: valueTicks) { value in
+                        AxisGridLine()
+                        AxisValueLabel {
+                            if let value = value.as(Double.self) {
+                                Text(valueFormat.axisLabel(for: value))
+                            }
                         }
                     }
                 }
 
-                // A day without a ranking has nowhere on this axis to mark.
-                if let ranking = selectedPoint?.ranking {
-                    AxisMarks(values: [Double(ranking)]) {
+                // A day with nothing plotted has nowhere on this axis to mark.
+                if let plotted = metric == .ranking ? selectedPoint?.ranking.map(Double.init) : selectedPoint?.value {
+                    AxisMarks(values: [plotted]) {
                         AxisGridLine(stroke: Self.crosshairStroke)
                             .foregroundStyle(Color.primary)
                     }

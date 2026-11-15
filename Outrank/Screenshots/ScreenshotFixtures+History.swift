@@ -12,7 +12,7 @@ nonisolated extension ScreenshotFixtures {
         guard team == historyTeam, season == nil || season == historySeason else {
             throw FixtureError.missing("\(team) \(season ?? "latest season")")
         }
-        return TeamHistory(season: historySeason, dates: historyDates, ranks: historyRanks)
+        return TeamHistory(season: historySeason, dates: historyDates, ranks: historyRanks, values: historyValues)
     }
 
     static func metadata() async throws -> RankingsMetadata {
@@ -29,6 +29,17 @@ nonisolated extension ScreenshotFixtures {
         "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-10", "2026-10-12", "2026-10-13",
         "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21",
         "2026-10-22", "2026-10-23"
+    ]
+
+    /// Points a game behind the Scoring Offense rankings below, lined up with
+    /// `historyDates`. Illustrative, not from the API: the fixtures were frozen before the
+    /// backend recorded values. Replace them the next time the fixtures are frozen.
+    private static let historyValues: [String: [Double?]] = [
+        "ScoringOffense": [
+            27.0, 27.0, 27.0, 27.0, 22.5, 22.5, 22.5, 22.5, 22.5, 22.5, 22.5, 22.5, 22.5, 22.5, 22.5, 23.3, 23.3,
+            23.3, 23.3, 23.3, 26.0, 27.8, 27.8, 27.8, 27.8, 27.8, 27.8, 27.8, 27.8, 27.8, 27.2, 29.0, 29.0, 29.0,
+            29.0, 29.0, 29.0
+        ]
     ]
 
     /// Each stat's rankings, lined up with `historyDates`.

@@ -7,13 +7,16 @@
 
 import SwiftUI
 
-/// Every team's ranking in one stat, with the selected team highlighted.
+/// Every team's ranking and value in one stat, with the selected team highlighted.
 struct RankingDetailView: View {
     let team: String
     let stat: String
 
     /// `nil` when the team has no ranking in the stat.
     let ranking: Int?
+
+    /// The team's value in the stat, formatted for display. `nil` when it has none.
+    let value: String?
 
     @State private var model = StatRankingsModel()
     @State private var reloadAttempt = 0
@@ -27,6 +30,7 @@ struct RankingDetailView: View {
             Section {
                 RankingRow(
                     title: String(localized: "\(team)'s Ranking"),
+                    value: value,
                     ranking: ranking,
                     titleFont: .headline,
                     rankingFont: .headline
@@ -49,6 +53,7 @@ struct RankingDetailView: View {
                     let isCurrentTeam = entry.title == team
                     RankingRow(
                         title: entry.title,
+                        value: entry.value,
                         ranking: entry.ranking,
                         titleFont: isCurrentTeam ? .headline : .body,
                         rankingFont: isCurrentTeam ? .headline : .body
@@ -77,6 +82,6 @@ struct RankingDetailView: View {
 
 #Preview {
     NavigationStack {
-        RankingDetailView(team: "Tulsa", stat: "FewestPenaltyYardsPerGame", ranking: 19)
+        RankingDetailView(team: "Tulsa", stat: "FewestPenaltyYardsPerGame", ranking: 19, value: "43.10")
     }
 }

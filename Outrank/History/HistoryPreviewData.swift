@@ -12,6 +12,9 @@ struct HistoryPreviewData: PreviewModifier {
     /// Whether to point at a day in the middle of the season, to preview the crosshair.
     var selectsDay = false
 
+    /// What the chart plots.
+    var metric = HistoryMetric.ranking
+
     static func makeSharedContext() async throws -> HistoryModel {
         // A fixed literal, so a failure here is a typo caught the first time a preview runs.
         guard let defaults = UserDefaults(suiteName: "HistoryPreview") else {
@@ -33,6 +36,7 @@ struct HistoryPreviewData: PreviewModifier {
         content
             .environment(context)
             .onAppear {
+                context.metric = metric
                 let points = context.series.points
                 context.rawSelectedDate = selectsDay ? points[points.count / 2].date : nil
             }

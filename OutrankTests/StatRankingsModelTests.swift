@@ -24,6 +24,17 @@ struct StatRankingsModelTests {
         #expect(model.loadFailed == false)
     }
 
+    @Test func rowsShowEachTeamsValueTheWayTheStatWritesIt() async {
+        let model = StatRankingsModel { _ in
+            .stub(["Houston": 1, "Tulsa": 90, "UTEP": 138], values: ["Houston": 0.589, "Tulsa": 0.331])
+        }
+
+        await model.load(stat: "ThirdDownConversionPct")
+
+        // UTEP is ranked, but arrived without a value.
+        #expect(model.entries.prefix(3).map(\.value) == ["58.9%", "33.1%", nil])
+    }
+
     @Test func teamTheAppDoesNotKnowStillGetsARow() async {
         let model = StatRankingsModel { _ in .stub(["New Program": 1]) }
 
