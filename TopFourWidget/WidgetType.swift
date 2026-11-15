@@ -11,10 +11,17 @@ enum WidgetType {
     case topFour
     case bottomFour
 
-    func title(for team: String) -> String {
+    var label: String {
         switch self {
-        case .topFour: "\(team)'s Top Four"
-        case .bottomFour: "\(team)'s Bottom Four"
+        case .topFour: "Top Four"
+        case .bottomFour: "Bottom Four"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .topFour: "arrow.up"
+        case .bottomFour: "arrow.down"
         }
     }
 
@@ -25,10 +32,17 @@ enum WidgetType {
         }
     }
 
-    var rankingColor: Color {
+    /// Green for a team's best stats and red for its worst, each running from the full
+    /// color to a deep shade of it.
+    var backgroundColors: [Color] {
         switch self {
-        case .topFour: .green
-        case .bottomFour: .red
+        case .topFour:
+            [.somewhatLighterDarkGreen, Color(red: 0 / 255, green: 48 / 255, blue: 18 / 255)]
+        case .bottomFour:
+            [
+                Color(red: 196 / 255, green: 30 / 255, blue: 45 / 255),
+                Color(red: 66 / 255, green: 8 / 255, blue: 16 / 255)
+            ]
         }
     }
 }

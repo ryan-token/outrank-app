@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// The rounded price button on the Tip Jar and Subscriptions pages.
+/// The rounded price button on the Tip Jar page.
 struct PriceButtonStyle: ButtonStyle {
     let tint: Color
 
@@ -27,9 +27,4 @@ struct PriceButtonStyle: ButtonStyle {
 
 extension ButtonStyle where Self == PriceButtonStyle {
     static var buy: PriceButtonStyle { PriceButtonStyle(tint: .green) }
-
-    /// Bright green once purchased.
-    static func subscribe(isPurchased: Bool) -> PriceButtonStyle {
-        PriceButtonStyle(tint: isPurchased ? .green : .somewhatLighterDarkGreen)
-    }
 }

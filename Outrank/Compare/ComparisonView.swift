@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct ComparisonView: View {
-    @Environment(\.scenePhase) private var scenePhase
-
     @State private var model = ComparisonModel()
     @State private var presentedPicker: ComparisonSlot?
     @State private var isShowingInfoSheet = false
@@ -17,7 +15,7 @@ struct ComparisonView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Sorted by \(model.sortMethod.sectionLabel(rankingPrefix: model.teamOne))") {
+                Section {
                     ForEach(model.rows) { entry in
                         ComparisonRow(
                             title: entry.title,
@@ -27,6 +25,8 @@ struct ComparisonView: View {
                             teamTwoRanking: entry.teamTwoRanking
                         )
                     }
+                } header: {
+                    Text("Sorted by \(model.sortMethod.sectionLabel(rankingPrefix: model.teamOne))")
                 }
 
                 if model.loadFailed {
@@ -61,12 +61,7 @@ struct ComparisonView: View {
                 InfoView(source: .compare)
                     .presentationDetents([.medium, .large])
             }
-            .task(id: ComparisonLoadKey(
-                teamOne: model.teamOne,
-                teamTwo: model.teamTwo,
-                isActive: scenePhase == .active
-            )) {
-                guard scenePhase == .active else { return }
+            .refreshTask(id: [model.teamOne, model.teamTwo]) {
                 await model.loadStaleTeams()
             }
         }

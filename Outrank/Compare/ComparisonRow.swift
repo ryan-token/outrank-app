@@ -10,9 +10,9 @@ import SwiftUI
 struct ComparisonRow: View {
     let title: String
     let teamOne: String
-    let teamOneRanking: Int
+    let teamOneRanking: Int?
     let teamTwo: String
-    let teamTwoRanking: Int
+    let teamTwoRanking: Int?
 
     var body: some View {
         let teamOneText = Conversions.humanReadableRanking(for: teamOneRanking)

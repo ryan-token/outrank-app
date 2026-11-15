@@ -9,11 +9,13 @@ import OSLog
 
 /// App Store screenshot support, turned on with the `-ScreenshotMode` launch argument.
 /// It loads frozen rankings instead of calling the API, uses in-memory favorites instead
-/// of the user's CloudKit store, and skips the review prompt.
+/// of the user's CloudKit store, shows History as a subscriber sees it, and skips the
+/// review prompt.
 ///
-/// Teams come from the existing defaults keys, passed as launch arguments, which override
-/// stored values without replacing them: `-CurrentTeam Tulsa`, `-TeamOne Tulsa`,
-/// `-TeamTwo SMU`. These open each screen directly:
+/// Teams and History's stat come from the existing defaults keys, passed as launch
+/// arguments, which override stored values without replacing them: `-CurrentTeam Tulsa`,
+/// `-TeamOne Tulsa`, `-TeamTwo SMU`, `-HistoryTeam Tulsa`, `-HistoryStat ScoringOffense`.
+/// These open each screen directly:
 /// - `-ScreenshotTab compare`: an ``AppTab`` raw value.
 /// - `-ScreenshotStat TurnoverMargin`: the stat to select on the Rankings tab.
 /// - `-ScreenshotSort byRankingAscending`: a ``SortMethod`` raw value.

@@ -12,49 +12,64 @@ struct TeamRankingsModelTests {
 
     @Test func chosenTeamIsRestoredOnNextLaunch() {
         let defaults = makeIsolatedDefaults()
-        TeamRankingsModel(defaults: defaults) { _ in RankingsResponse() }.team = "SMU"
+        TeamRankingsModel(defaults: defaults) { _ in .stub() }.team = "SMU"
 
-        let relaunched = TeamRankingsModel(defaults: defaults) { _ in RankingsResponse() }
+        let relaunched = TeamRankingsModel(defaults: defaults) { _ in .stub() }
 
         #expect(relaunched.team == "SMU")
     }
 
     @Test func changingTeamDropsThePreviousTeamsRankings() async {
-        let model = TeamRankingsModel(defaults: makeIsolatedDefaults()) { _ in RankingsResponse(rankings: rankings) }
+        let model = TeamRankingsModel(defaults: makeIsolatedDefaults()) { _ in .stub(rankings) }
         await model.load()
 
         model.team = "SMU"
 
         #expect(model.sortedRankings.isEmpty)
-        #expect(model.ranking(forStat: "TotalDefense") == RankingsResponse.unranked)
+        #expect(model.ranking(forStat: "TotalDefense") == nil)
     }
 
-    @Test func loadSortsRankingsWithReadableTitles() async {
+    @Test func loadGivesEveryStatARowWhetherOrNotTheTeamIsRankedInIt() async throws {
         var requestedTeams: [String] = []
         let model = TeamRankingsModel(defaults: makeIsolatedDefaults()) { team in
             requestedTeams.append(team)
-            return RankingsResponse(rankings: rankings)
+            return .stub(rankings)
         }
 
         let loaded = await model.load()
 
         #expect(loaded)
         #expect(requestedTeams == [TeamRankingsModel.defaultTeam])
-        #expect(model.sortedRankings.map(\.id) == ["BlockedKicks", "ScoringOffense", "TotalDefense"])
-        #expect(model.sortedRankings.first?.title == "Blocked Kicks")
+        #expect(model.sortedRankings.map(\.id) == AllStats.all)
+        let blockedKicks = try #require(model.sortedRankings.first { $0.id == "BlockedKicks" })
+        #expect(blockedKicks.title == "Blocked Kicks")
+        #expect(blockedKicks.ranking == 40)
+        // The API leaves out stats the team has no ranking in.
+        let fumblesLost = try #require(model.sortedRankings.first { $0.id == "FumblesLost" })
+        #expect(fumblesLost.ranking == nil)
         #expect(model.ranking(forStat: "TotalDefense") == 12)
-        #expect(model.ranking(forStat: "Missing") == RankingsResponse.unranked)
-        #expect(!model.loadFailed)
+        #expect(model.loadFailed == false)
+    }
+
+    @Test func statTheAppDoesNotKnowStillGetsARow() async throws {
+        let model = TeamRankingsModel(defaults: makeIsolatedDefaults()) { _ in .stub(["BrandNewStat": 5]) }
+
+        await model.load()
+
+        let newStat = try #require(model.sortedRankings.first { $0.id == "BrandNewStat" })
+        #expect(newStat.title == "Brand New Stat")
+        #expect(model.sortedRankings.count == AllStats.all.count + 1)
     }
 
     @Test func changingTheSortOrderResortsAndBumpsTheRevision() async {
-        let model = TeamRankingsModel(defaults: makeIsolatedDefaults()) { _ in RankingsResponse(rankings: rankings) }
+        let model = TeamRankingsModel(defaults: makeIsolatedDefaults()) { _ in .stub(rankings) }
         await model.load()
         let revision = model.revision
 
         model.sortMethod = .byRankingAscending
 
-        #expect(model.sortedRankings.map(\.ranking) == [3, 12, 40])
+        #expect(model.sortedRankings.prefix(3).map(\.ranking) == [3, 12, 40])
+        #expect(model.sortedRankings.dropFirst(3).allSatisfy { $0.ranking == nil })
         #expect(model.revision > revision)
     }
 
@@ -62,16 +77,58 @@ struct TeamRankingsModelTests {
         var shouldFail = false
         let model = TeamRankingsModel(defaults: makeIsolatedDefaults()) { _ in
             if shouldFail { throw StubError() }
-            return RankingsResponse(rankings: rankings)
+            return .stub(rankings)
         }
         await model.load()
 
         shouldFail = true
         let loaded = await model.load()
 
-        #expect(!loaded)
+        #expect(loaded == false)
         #expect(model.loadFailed)
-        #expect(model.sortedRankings.count == rankings.count)
+        #expect(model.ranking(forStat: "ScoringOffense") == 3)
+    }
+
+    @Test func currentRankingsAreNotFetchedAgainUntilTheyAreStale() async {
+        var clock = Date.now
+        var fetchCount = 0
+        let model = TeamRankingsModel(
+            defaults: makeIsolatedDefaults(),
+            fetch: { _ in
+                fetchCount += 1
+                return .stub(rankings)
+            },
+            now: { clock }
+        )
+        await model.loadIfStale()
+
+        clock += RankingsSnapshot.maxAge - 1
+        await model.loadIfStale()
+        #expect(fetchCount == 1)
+
+        clock += 2
+        await model.loadIfStale()
+        #expect(fetchCount == 2)
+    }
+
+    @Test func failedLoadIsRetriedEvenWhenRecent() async {
+        var shouldFail = false
+        var fetchCount = 0
+        let model = TeamRankingsModel(defaults: makeIsolatedDefaults()) { _ in
+            fetchCount += 1
+            if shouldFail { throw StubError() }
+            return .stub(rankings)
+        }
+        await model.loadIfStale()
+        shouldFail = true
+        await model.load()
+
+        shouldFail = false
+        let loaded = await model.loadIfStale()
+
+        #expect(loaded)
+        #expect(fetchCount == 3)
+        #expect(model.loadFailed == false)
     }
 
     @Test func responseForAPreviousTeamIsIgnored() async {
@@ -79,13 +136,13 @@ struct TeamRankingsModelTests {
         let model = TeamRankingsModel(defaults: makeIsolatedDefaults()) { _ in
             // The user picks another team while this request is in flight.
             reference.model?.team = "SMU"
-            return RankingsResponse(rankings: ["ScoringOffense": 1])
+            return .stub(["ScoringOffense": 1])
         }
         reference.model = model
 
         let loaded = await model.load()
 
-        #expect(!loaded)
+        #expect(loaded == false)
         #expect(model.sortedRankings.isEmpty)
     }
 
@@ -98,7 +155,7 @@ struct TeamRankingsModelTests {
 
         let loaded = await Task { await model.load() }.value
 
-        #expect(!loaded)
-        #expect(!model.loadFailed)
+        #expect(loaded == false)
+        #expect(model.loadFailed == false)
     }
 }

@@ -10,11 +10,13 @@ import SwiftUI
 
 struct RankingsView: View {
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @AppStorage("AppUsedCount") private var appUsedCount = 0
     @AppStorage("ReviewRequestedVersion") private var reviewRequestedVersion = ""
 
     @State private var model = TeamRankingsModel()
-    @SceneStorage("SelectedStat") private var selectedStat: String?
+    @State private var selectedStat: String?
+    @State private var hasRestoredSelectedStat = false
     @State private var isShowingTeamPicker = false
     @State private var isShowingInfoSheet = false
 
@@ -29,13 +31,22 @@ struct RankingsView: View {
                 isShowingTeamPicker: $isShowingTeamPicker,
                 isShowingInfoSheet: $isShowingInfoSheet
             )
+            // The selected stat is presented as a destination, not switched to inside the
+            // detail column: a destination's title is known before it is pushed in compact
+            // widths, where a column's own content only gets its title once the push ends.
+            .navigationDestination(item: $selectedStat) { stat in
+                RankingsDetailDestination(model: model, stat: stat)
+                    // Monochrome controls are tinted here and on the sidebar's toolbar items, not
+                    // on the split view: its tint fills the selected sidebar row, and `.primary`
+                    // is white in dark mode, which hid the row's white text.
+                    .tint(.primary)
+            }
         } detail: {
-            // Monochrome controls are tinted here and on the sidebar's toolbar items, not on
-            // the split view: its tint fills the selected sidebar row, and `.primary` is
-            // white in dark mode, which hid the row's white text.
-            RankingsDetailColumn(model: model, selectedStat: selectedStat)
-                .tint(.primary)
+            // Shown until a stat is selected, where there is room for a second column.
+            WelcomeView(type: .rankings)
         }
+        .environment(\.splitViewIsCollapsed, horizontalSizeClass != .regular)
+        .extendsUnderTabBar()
         .sheet(isPresented: $isShowingTeamPicker) {
             TeamPickerView(team: $model.team)
         }
@@ -43,11 +54,19 @@ struct RankingsView: View {
             InfoView(source: .rankings)
                 .presentationDetents([.medium, .large])
         }
-        .task(id: model.team) {
+        .refreshTask(id: model.team) {
             await refreshRankings()
         }
+        .onChange(of: selectedStat) { LastPlace.selectedStat = selectedStat }
         .onAppear {
             appUsedCount += 1
+            // Set once the list is on screen: a split view doesn't present a destination
+            // whose item is already set when it first appears. Only the first time, so
+            // coming back to this tab never adopts a stat another window saved since.
+            if !hasRestoredSelectedStat {
+                hasRestoredSelectedStat = true
+                selectedStat = LastPlace.selectedStat
+            }
 
             #if DEBUG
             if let stat = ScreenshotMode.stat {
@@ -60,8 +79,10 @@ struct RankingsView: View {
         }
     }
 
+    /// Loads the team's rankings if they are missing or stale, then considers asking for
+    /// a review once fresh rankings are on screen.
     private func refreshRankings() async {
-        guard await model.load(), appUsedCount > 5 else { return }
+        guard await model.loadIfStale(), appUsedCount > 5 else { return }
 
         #if DEBUG
         // Screenshots never show the review prompt.

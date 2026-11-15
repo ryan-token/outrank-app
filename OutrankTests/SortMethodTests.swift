@@ -11,7 +11,7 @@ struct SortMethodTests {
         RankingEntry(id: "RushingOffense", title: "Rushing Offense", ranking: 40),
         RankingEntry(id: "BlockedKicks", title: "Blocked Kicks", ranking: 12),
         RankingEntry(id: "TotalDefense", title: "Total Defense", ranking: 12),
-        RankingEntry(id: "FumblesLost", title: "Fumbles Lost", ranking: RankingsResponse.unranked)
+        RankingEntry(id: "FumblesLost", title: "Fumbles Lost", ranking: nil)
     ]
 
     @Test func alphabeticalByStat() {

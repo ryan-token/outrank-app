@@ -15,7 +15,7 @@ struct TopFourWidget: Widget {
         StaticConfiguration(kind: kind, provider: TeamRankingsProvider()) { entry in
             TopOrBottomFourView(type: .topFour, team: entry.team, rankings: entry.rankings)
         }
-        .configurationDisplayName("Top Four Widget")
+        .configurationDisplayName("Top Four")
         .description("A team's top four stats. Change the team in the app's Settings page.")
         .supportedFamilies([.systemMedium])
     }

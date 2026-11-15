@@ -16,8 +16,6 @@ struct StatusInfoView: View {
 
     var body: some View {
         Text(statusDescription)
-            .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var statusDescription: String {

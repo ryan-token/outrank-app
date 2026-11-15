@@ -15,11 +15,17 @@ struct RankingsSidebar: View {
     @Binding var isShowingTeamPicker: Bool
     @Binding var isShowingInfoSheet: Bool
 
+    @Environment(\.splitViewIsCollapsed) private var splitViewIsCollapsed
+
     var body: some View {
-        List(selection: $selectedStat) {
-            Section("Sorted by \(model.sortMethod.sectionLabel())") {
+        // The list only shows the selection, as the highlighted row beside the stat's
+        // screen in two columns. Its rows set it. See `SidebarRow`. Collapsed, the list
+        // gets no selection at all: a split view also navigates on its sidebar list's
+        // selection, which would compete with the push the rows already cause.
+        List(selection: .constant(splitViewIsCollapsed ? nil : selectedStat)) {
+            Section {
                 ForEach(model.sortedRankings) { entry in
-                    NavigationLink(value: entry.id) {
+                    SidebarRow(value: entry.id, selection: $selectedStat) {
                         RankingRow(title: entry.title, ranking: entry.ranking, titleFont: .headline)
                     }
                 }
@@ -28,6 +34,8 @@ struct RankingsSidebar: View {
                     Text("😕 Error loading rankings for \(model.team). Please try again or try a different team.")
                         .foregroundStyle(.secondary)
                 }
+            } header: {
+                Text("Sorted by \(model.sortMethod.sectionLabel())")
             }
         }
         .refreshable {

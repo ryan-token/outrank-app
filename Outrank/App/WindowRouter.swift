@@ -6,8 +6,8 @@
 import Foundation
 
 /// Carries requests to switch a window to one of its Settings pages from screens deep
-/// inside it, such as a team picker sheet. The window keeps its selection in scene
-/// storage so it survives the scene being restored, so it applies each request itself.
+/// inside it, such as a team picker sheet. The window owns its selection, so it applies
+/// each request itself.
 @Observable
 final class WindowRouter {
     private(set) var requestedSettingsDetail: SettingsDetail?

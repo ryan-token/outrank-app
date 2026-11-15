@@ -10,5 +10,6 @@ import Foundation
 enum AppTab: String {
     case rankings
     case compare
+    case history
     case settings
 }

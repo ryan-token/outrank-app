@@ -1,0 +1,32 @@
+//
+//  HistoryStatPicker.swift
+//  Outrank
+//
+
+import SwiftUI
+
+/// The screen for choosing which stat History charts. There are dozens, so they can be
+/// searched by name.
+struct HistoryStatPicker: View {
+    @State private var searchText = ""
+
+    var body: some View {
+        HistoryStatList(searchText: searchText)
+            // Always in the navigation bar: with the tab bar along the bottom, the default
+            // placement leaves the field hidden until the list is pulled down.
+            .searchable(
+                text: $searchText,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: "Search Stats"
+            )
+            .navigationTitle("Stat")
+            .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+#Preview {
+    NavigationStack {
+        HistoryStatPicker()
+            .environment(HistoryModel())
+    }
+}

@@ -19,7 +19,7 @@ struct ComparisonHeader: View {
         HStack(alignment: .top) {
             ComparisonTeamColumn(
                 team: model.teamOne,
-                average: model.teamOneAverage,
+                average: model.average(for: .teamOne),
                 isLoading: model.isAwaitingFirstLoad(.teamOne),
                 slot: .teamOne,
                 alignment: .leading,
@@ -30,7 +30,7 @@ struct ComparisonHeader: View {
 
             ComparisonTeamColumn(
                 team: model.teamTwo,
-                average: model.teamTwoAverage,
+                average: model.average(for: .teamTwo),
                 isLoading: model.isAwaitingFirstLoad(.teamTwo),
                 slot: .teamTwo,
                 alignment: .trailing,

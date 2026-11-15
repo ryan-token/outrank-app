@@ -9,62 +9,38 @@ import OSLog
 import StoreKit
 import SwiftUI
 
+/// The Subscriptions screen in Settings: the same options the History paywall offers,
+/// under where the user's own subscription stands.
 struct SubscriptionsView: View {
     @Environment(Store.self) private var store
 
     @State private var currentSubscription: Product?
     @State private var status: Product.SubscriptionInfo.Status?
     @State private var isShowingManageSubscriptions = false
-    @State private var isShowingRestoreError = false
-    @State private var restoreErrorTrigger = 0
 
     private static let logger = Logger(category: "SubscriptionsView")
 
     var body: some View {
-        List {
-            if let currentSubscription {
-                Section("My Subscription") {
-                    ListSubscriptionOptionsView(product: currentSubscription, purchasingEnabled: false)
-
-                    if let status {
-                        StatusInfoView(product: currentSubscription, status: status)
-                    }
-                }
-            }
-
-            Section("Subscription Options") {
-                ForEach(store.subscriptions) { subscription in
-                    ListSubscriptionOptionsView(product: subscription)
-                }
-            }
-
-            Section {
-                Text("""
-                    Outrank is free with no ads. If you find it useful, please consider supporting \
-                    development by tipping annually.
-                    """)
-                    .foregroundStyle(.secondary)
-            }
+        SubscriptionOptionsView {
+            SubscriptionsHeader(currentSubscription: currentSubscription, status: status)
         }
+        // The page is left with the back button; a close button beside it would do the same.
+        .storeButton(.hidden, for: .cancellation)
         .navigationTitle("Subscriptions")
-        .task(id: store.purchasedIdentifiers) {
+        .navigationBarTitleDisplayMode(.inline)
+        .task(id: SubscriptionStatusKey(
+            activeSubscriptionIDs: store.activeSubscriptionIDs,
+            statusRevision: store.subscriptionStatusRevision,
+            hasLoadedProducts: !store.subscriptions.isEmpty
+        )) {
             await updateSubscriptionStatus()
         }
         .manageSubscriptionsSheet(isPresented: $isShowingManageSubscriptions)
-        .sensoryFeedback(.error, trigger: restoreErrorTrigger)
-        .alert("Couldn't Restore Purchases", isPresented: $isShowingRestoreError) {
-        } message: {
-            Text("Please check your connection and try again.")
-        }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                // A descriptive symbol rather than an ellipsis, which the system reserves
-                // for its own toolbar overflow menu.
-                Menu("Account", systemImage: "person.crop.circle") {
+            // Only a subscriber has a subscription to manage.
+            if currentSubscription != nil {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Manage Subscription", systemImage: "creditcard", action: showManageSubscriptions)
-                        .disabled(currentSubscription == nil)
-
-                    Button("Restore Purchases", systemImage: "arrow.clockwise", action: restore)
                 }
             }
         }
@@ -72,10 +48,6 @@ struct SubscriptionsView: View {
 
     private func showManageSubscriptions() {
         isShowingManageSubscriptions = true
-    }
-
-    private func restore() {
-        Task { await restorePurchases() }
     }
 
     private func updateSubscriptionStatus() async {
@@ -107,8 +79,8 @@ struct SubscriptionsView: View {
                         continue
                     }
 
-                    let highestTier = store.tier(for: currentProduct.id)
-                    let newTier = store.tier(for: renewalInfo.currentProductID)
+                    let highestTier = SubscriptionTier(productID: currentProduct.id)
+                    let newTier = SubscriptionTier(productID: renewalInfo.currentProductID)
 
                     if newTier > highestTier {
                         highestStatus = status
@@ -121,18 +93,6 @@ struct SubscriptionsView: View {
             currentSubscription = highestProduct
         } catch {
             Self.logger.error("Could not update subscription status: \(String(describing: error))")
-        }
-    }
-
-    private func restorePurchases() async {
-        do {
-            try await store.restorePurchases()
-        } catch StoreKitError.userCancelled {
-            // Dismissing the Apple Account sign-in isn't a failure worth an alert.
-        } catch {
-            restoreErrorTrigger += 1
-            isShowingRestoreError = true
-            Self.logger.error("Restore purchases failed: \(String(describing: error))")
         }
     }
 }
