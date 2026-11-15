@@ -3,8 +3,8 @@
     {
       "value": {
         "linear-gradient": [
-          "extended-srgb:0.17,0.52,0.24,1.0",
-          "extended-srgb:0.05,0.27,0.11,1.0"
+          "extended-srgb:0.22,0.6,0.28,1.0",
+          "extended-srgb:0.08,0.36,0.15,1.0"
         ],
         "orientation": {
           "start": {
@@ -22,8 +22,8 @@
       "appearance": "dark",
       "value": {
         "linear-gradient": [
-          "extended-srgb:0.09,0.29,0.14,1.0",
-          "extended-srgb:0.03,0.13,0.06,1.0"
+          "extended-srgb:0.12,0.36,0.18,1.0",
+          "extended-srgb:0.04,0.18,0.08,1.0"
         ],
         "orientation": {
           "start": {
@@ -39,6 +39,47 @@
     }
   ],
   "groups": [
+    {
+      "layers": [
+        {
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-srgb:0.97,0.93,0.82,1.0"
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:1.0,1.0"
+              }
+            }
+          ],
+          "glass": true,
+          "image-name": "05-letter.svg",
+          "name": "letter",
+          "opacity": 0.7
+        }
+      ],
+      "lighting": "individual",
+      "name": "letter",
+      "position": {
+        "scale": 0.88,
+        "translation-in-points": [
+          0,
+          0
+        ]
+      },
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "specular": true,
+      "translucency": {
+        "enabled": true,
+        "value": 0.2
+      }
+    },
     {
       "layers": [
         {
@@ -81,7 +122,20 @@
           "fill-specializations": [
             {
               "value": {
-                "solid": "extended-srgb:0.6,0.29,0.06,1.0"
+                "linear-gradient": [
+                  "extended-srgb:0.86,0.49,0.15,1.0",
+                  "extended-srgb:0.5,0.23,0.04,1.0"
+                ],
+                "orientation": {
+                  "start": {
+                    "x": 0.5,
+                    "y": 0.27
+                  },
+                  "stop": {
+                    "x": 0.5,
+                    "y": 0.7
+                  }
+                }
               }
             },
             {
@@ -94,6 +148,24 @@
           "glass": true,
           "image-name": "02-ball.svg",
           "name": "ball"
+        },
+        {
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-srgb:0.97,0.93,0.82,1.0"
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:1.0,1.0"
+              }
+            }
+          ],
+          "glass": true,
+          "image-name": "01-ball-edge.svg",
+          "name": "ball edge"
         }
       ],
       "lighting": "combined",
@@ -113,46 +185,6 @@
       "translucency": {
         "enabled": false,
         "value": 0.0
-      }
-    },
-    {
-      "layers": [
-        {
-          "fill-specializations": [
-            {
-              "value": {
-                "solid": "extended-srgb:0.97,0.93,0.82,1.0"
-              }
-            },
-            {
-              "appearance": "tinted",
-              "value": {
-                "solid": "extended-gray:1.0,1.0"
-              }
-            }
-          ],
-          "glass": true,
-          "image-name": "01-letter.svg",
-          "name": "letter"
-        }
-      ],
-      "lighting": "individual",
-      "name": "letter",
-      "position": {
-        "scale": 0.88,
-        "translation-in-points": [
-          0,
-          0
-        ]
-      },
-      "shadow": {
-        "kind": "neutral",
-        "opacity": 0.5
-      },
-      "specular": true,
-      "translucency": {
-        "enabled": true,
-        "value": 0.2
       }
     }
   ],
