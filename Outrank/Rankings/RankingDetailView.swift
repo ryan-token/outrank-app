@@ -21,6 +21,12 @@ struct RankingDetailView: View {
     @State private var model = StatRankingsModel()
     @State private var reloadAttempt = 0
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// The room between a heading and the text under it, the same in each section that
+    /// has both.
+    @ScaledMetric private var headingSpacing = 8.0
+
     private var humanReadableStat: String {
         Conversions.humanReadableStat(for: stat)
     }
@@ -28,26 +34,43 @@ struct RankingDetailView: View {
     var body: some View {
         List {
             Section {
-                RankingRow(
-                    title: String(localized: "\(team)'s Ranking"),
-                    value: value,
-                    ranking: ranking,
-                    titleFont: .headline,
-                    rankingFont: .headline
-                )
+                // One row: the sentence spells out the ranking above it.
+                VStack(alignment: .leading, spacing: headingSpacing) {
+                    RankingRow(
+                        title: String(localized: "\(team)'s ranking"),
+                        ranking: ranking,
+                        titleFont: .headline,
+                        rankingFont: .headline
+                    )
+
+                    if let ranking {
+                        RankingSentence(team: team, stat: humanReadableStat, ranking: ranking, value: value)
+                    }
+                }
             }
 
             Section {
-                Text("Description:")
-                    .font(.headline)
+                // One row, laid out like the one above: a heading is set apart from what
+                // it heads by its weight, without a line.
+                VStack(alignment: .leading, spacing: headingSpacing) {
+                    Text("Description:")
+                        .font(.headline)
 
-                Text(AllStats.description(for: stat))
-                    .foregroundStyle(.secondary)
+                    Text(AllStats.description(for: stat))
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Section {
-                Text("All Rankings For This Stat:")
+                Text("All rankings for this stat:")
                     .font(.headline)
+                    .listRowSeparator(.hidden, edges: .bottom)
+
+                // At accessibility text sizes each row stacks its numbers under the team's
+                // name, which leaves no columns to head.
+                if !model.entries.isEmpty, !dynamicTypeSize.isAccessibilitySize {
+                    RankingTableHeader(longestValue: model.longestValue)
+                }
 
                 ForEach(model.entries) { entry in
                     let isCurrentTeam = entry.title == team
@@ -56,7 +79,8 @@ struct RankingDetailView: View {
                         value: entry.value,
                         ranking: entry.ranking,
                         titleFont: isCurrentTeam ? .headline : .body,
-                        rankingFont: isCurrentTeam ? .headline : .body
+                        rankingFont: isCurrentTeam ? .headline : .body,
+                        inTableWithLongestValue: model.longestValue
                     )
                 }
 

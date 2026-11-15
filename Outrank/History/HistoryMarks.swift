@@ -14,13 +14,12 @@ import SwiftUI
 struct HistoryMarks: ChartContent {
     let series: HistorySeries
 
-    // Shared with `HistoryValueMarks`, so the chart looks the same whichever it plots.
-    static let lineStyle = StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round)
+    private static let lineStyle = StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round)
 
     /// Symbol areas, in points squared: a dot barely wider than the line for a lone ranked
     /// day, and a larger one that marks where the line ends.
-    static let isolatedPointArea: Double = 20
-    static let latestPointArea: Double = 60
+    private static let isolatedPointArea: Double = 20
+    private static let latestPointArea: Double = 60
 
     var body: some ChartContent {
         LinePlot(

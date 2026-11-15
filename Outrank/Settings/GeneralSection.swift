@@ -27,7 +27,7 @@ struct GeneralSection: View {
         Section {
             Link(destination: AppLinks.featureRequest) {
                 SettingsRow(
-                    icon: "bolt.square.fill",
+                    icon: "bolt",
                     iconColor: .mint,
                     title: "Feature Request",
                     showsExternalIndicator: true
@@ -36,11 +36,11 @@ struct GeneralSection: View {
             .accessibilityLabel("Send an email with a feature request")
 
             Button(action: showAbout) {
-                SettingsRow(icon: "person.crop.square.fill", iconColor: .blue, title: "About")
+                SettingsRow(icon: "person", iconColor: .blue, title: "About")
             }
 
             Button(action: showPrivacyDialog) {
-                SettingsRow(icon: "lock.square.fill", iconColor: .gray, title: "Terms & Privacy Policy")
+                SettingsRow(icon: "lock", iconColor: .gray, title: "Terms & Privacy Policy")
             }
             .accessibilityLabel("Terms of Use and Privacy Policy")
             .confirmationDialog(

@@ -27,26 +27,6 @@ nonisolated struct HistorySeries: Equatable, Sendable {
     let best: HistoryPoint?
     let worst: HistoryPoint?
 
-    /// Days with a value that have no such day on either side, plotted as dots when the
-    /// chart shows values. The first day the backend recorded values is one.
-    let isolatedValuePoints: [HistoryPoint]
-
-    /// The most recent day with a value, or `nil` when the season has none: every season
-    /// from before the backend recorded them.
-    let latestValued: HistoryPoint?
-
-    /// Whether the season has any values to plot.
-    var hasValues: Bool {
-        latestValued != nil
-    }
-
-    /// How the stat's values are written out, for labeling the chart's value scale.
-    let valueFormat: StatValueFormat
-
-    /// The chart's value scale, fitted to the season's own values: unlike rankings, they
-    /// have no field to span. `nil` when the season has none.
-    let valueScale: HistoryValueScale?
-
     /// The chart's ranking scale, the same for every team and stat so switching between
     /// them compares like with like. It runs from 1st to last place in the FBS field (or
     /// to the series' own worst ranking, should the field outgrow this version's team
@@ -87,7 +67,6 @@ nonisolated struct HistorySeries: Equatable, Sendable {
                 return HistoryPoint(
                     date: day.0,
                     ranking: day.1,
-                    value: value,
                     valueDescription: value.map(valueFormat.string(for:))
                 )
             }
@@ -98,11 +77,7 @@ nonisolated struct HistorySeries: Equatable, Sendable {
 
         self.title = title
         self.points = points
-        isolatedPoints = Self.isolated(points) { $0.ranking != nil }
-        isolatedValuePoints = Self.isolated(points) { $0.value != nil }
-        latestValued = points.last { $0.value != nil }
-        self.valueFormat = valueFormat
-        valueScale = HistoryValueScale(values: points.compactMap(\.value), smallestStep: valueFormat.smallestStep)
+        isolatedPoints = Self.isolated(points)
         latest = ranked.last?.point
         best = ranked.min { $0.ranking < $1.ranking }?.point
         worst = ranked.max { $0.ranking < $1.ranking }?.point
@@ -117,17 +92,13 @@ nonisolated struct HistorySeries: Equatable, Sendable {
             / (scaleDomain.upperBound - scaleDomain.lowerBound)
     }
 
-    /// The points that can be plotted but have no plottable day on either side. A line
-    /// needs two points to draw, so the chart marks these with dots.
-    private static func isolated(
-        _ points: [HistoryPoint],
-        where isPlottable: (HistoryPoint) -> Bool
-    ) -> [HistoryPoint] {
+    /// The ranked points with no ranked day on either side.
+    private static func isolated(_ points: [HistoryPoint]) -> [HistoryPoint] {
         points.indices.compactMap { index in
-            let hasPlottableNeighbor = [index - 1, index + 1].contains { neighbor in
-                points.indices.contains(neighbor) && isPlottable(points[neighbor])
+            let hasRankedNeighbor = [index - 1, index + 1].contains { neighbor in
+                points.indices.contains(neighbor) && points[neighbor].ranking != nil
             }
-            return isPlottable(points[index]) && !hasPlottableNeighbor ? points[index] : nil
+            return points[index].ranking != nil && !hasRankedNeighbor ? points[index] : nil
         }
     }
 

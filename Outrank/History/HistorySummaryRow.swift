@@ -15,13 +15,13 @@ struct HistorySummaryRow: View {
         LabeledContent {
             HStack {
                 if let value = point.valueDescription {
-                    Text(value)
+                    StatValueBadge(value: value)
                 }
 
                 Text(point.rankingDescription)
+                    .monospacedDigit()
                     .foregroundStyle(RankingStyle.color(for: point.ranking))
             }
-            .monospacedDigit()
         } label: {
             Text(title)
             Text(point.date, format: .dateTime.month(.abbreviated).day().year())

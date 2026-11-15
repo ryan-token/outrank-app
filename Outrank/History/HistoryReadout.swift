@@ -6,8 +6,7 @@
 import SwiftUI
 
 /// Spells out one day above the History chart: the day being pointed at, or else the one
-/// the plotted line ends on. What the chart plots is the larger figure, with the day's
-/// ranking or value beside it.
+/// the line ends on, as its ranking with the stat value behind it in a badge beside it.
 ///
 /// It keeps its space while there is no day to show, so the chart beneath it doesn't
 /// jump when a season arrives.
@@ -26,19 +25,28 @@ struct HistoryReadout: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    /// The room between the ranking and the value's badge when they are side by side.
+    @ScaledMetric private var figureSpacing = 14.0
+
     var body: some View {
         let point = model.focusedPoint
         let date = point?.date ?? Self.placeholderDate
-        let showsValue = model.plottedMetric == .value
         let ranking = point?.rankingDescription ?? Self.placeholderRanking
         let rankingColor = RankingStyle.color(for: point?.ranking)
-        // While a season loads, the placeholder stands for whatever the chart last plotted.
-        let value = point == nil ? (showsValue ? Self.placeholderValue : nil) : point?.valueDescription
+        let value = point?.valueDescription
 
-        // Side by side on a shared baseline, until the text is too large for both to fit.
+        // The value's badge is always laid out, and only shown when there is a value to put
+        // in it. A day without one then takes exactly the room of a day with one, so
+        // nothing moves as a selection crosses from one to the other.
+        let badge = StatValueBadge(value: value ?? Self.placeholderValue)
+            .opacity(value == nil ? 0 : 1)
+            .accessibilityHidden(value == nil)
+
+        // Side by side and centered on each other, until the text is too large for both
+        // to fit.
         let figures = dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading))
-            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+            : AnyLayout(HStackLayout(spacing: figureSpacing))
 
         VStack(alignment: .leading) {
             Text(Conversions.humanReadableStat(for: model.stat))
@@ -46,17 +54,12 @@ struct HistoryReadout: View {
 
             Group {
                 figures {
-                    // A day pointed at on the value chart can be one without a value.
-                    Text(showsValue ? value ?? String(localized: "No Value") : ranking)
+                    Text(ranking)
                         .font(.largeTitle)
                         .bold()
-                        .foregroundStyle(showsValue ? AnyShapeStyle(.primary) : AnyShapeStyle(rankingColor))
+                        .foregroundStyle(rankingColor)
 
-                    if let secondary = showsValue ? ranking : value {
-                        Text(secondary)
-                            .font(.title3)
-                            .foregroundStyle(showsValue ? AnyShapeStyle(rankingColor) : AnyShapeStyle(.secondary))
-                    }
+                    badge
                 }
                 .monospacedDigit()
 
@@ -79,11 +82,6 @@ struct HistoryReadout: View {
 
 #if DEBUG
 #Preview(traits: .modifier(HistoryPreviewData())) {
-    HistoryReadout()
-        .padding()
-}
-
-#Preview("Values", traits: .modifier(HistoryPreviewData(metric: .value))) {
     HistoryReadout()
         .padding()
 }

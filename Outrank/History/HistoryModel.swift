@@ -14,7 +14,6 @@ import OSLog
 final class HistoryModel {
     static let teamKey = "HistoryTeam"
     static let statKey = "HistoryStat"
-    static let metricKey = "HistoryMetric"
     static let defaultStat = "ScoringOffense"
 
     /// The team being shown. Persisted so the screen reopens on the same team.
@@ -34,26 +33,6 @@ final class HistoryModel {
             rebuildSeries()
         }
     }
-
-    /// What the user asked the chart to plot. Persisted alongside the stat. The chart
-    /// follows `plottedMetric`, which falls back to rankings for a season with no values.
-    var metric: HistoryMetric {
-        didSet {
-            guard metric != oldValue else { return }
-            defaults.set(metric.rawValue, forKey: Self.metricKey)
-        }
-    }
-
-    /// What the chart plots: the chosen metric, or rankings when the season on screen has
-    /// no values, as every season from before the backend recorded them doesn't.
-    var plottedMetric: HistoryMetric {
-        offersValues ? metric : .ranking
-    }
-
-    /// Whether there are values to plot, and so a choice of metric to offer. While a season
-    /// loads this stays as the last one left it, so changing the team doesn't take the
-    /// choice away and bring it straight back.
-    private(set) var offersValues = false
 
     /// The season to show, or `nil` to follow the team's most recent one. Set through
     /// `selectedSeason`.
@@ -100,10 +79,10 @@ final class HistoryModel {
     /// The day nearest to where the user is pointing, or `nil` when they aren't.
     private(set) var selectedPoint: HistoryPoint?
 
-    /// The day to spell out beside the chart: the one being pointed at, or else the day
-    /// the plotted line ends on.
+    /// The day to spell out beside the chart: the one being pointed at, or else the most
+    /// recent day with a ranking.
     var focusedPoint: HistoryPoint? {
-        selectedPoint ?? (plottedMetric == .value ? series.latestValued : series.latest)
+        selectedPoint ?? series.latest
     }
 
     private var history: TeamHistory?
@@ -154,7 +133,6 @@ final class HistoryModel {
         // stat picker something to show as selected until a season says what there is.
         let stat = defaults.string(forKey: Self.statKey) ?? Self.defaultStat
         self.stat = stat
-        metric = defaults.string(forKey: Self.metricKey).flatMap(HistoryMetric.init) ?? .ranking
         stats = AllStats.including([stat])
     }
 
@@ -260,9 +238,6 @@ final class HistoryModel {
             )
         } else {
             series = .empty
-        }
-        if history != nil, offersValues != series.hasValues {
-            offersValues = series.hasValues
         }
         // The selection follows the data: a point from the old series can't stay selected.
         resolveSelection()

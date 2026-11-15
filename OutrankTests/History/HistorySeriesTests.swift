@@ -66,33 +66,22 @@ struct HistorySeriesTests {
         #expect(series.isolatedPoints.map(\.ranking) == [5, 7])
     }
 
-    @Test func valuesBreakTheirLineWhereTheyAreMissingAndALoneOneBecomesADot() {
-        let rankings: [Int?] = [40, 38, 37, 35, 34]
-        let days = rankings.indices.map { Self.firstDay + Double($0) * Self.day }
+    @Test func eachDayCarriesItsValueAsTextAndDaysWithoutOneCarryNone() {
+        let days = (0..<4).map { Self.firstDay + Double($0) * Self.day }
 
+        // The values stop a day short of the season, as they do for one that began before
+        // the backend recorded them.
         let series = HistorySeries(
             title: "Scoring Offense",
             days: days,
-            rankings: rankings,
-            values: [nil, 30.5, nil, 31, 33.6],
+            rankings: [40, 38, 37, 35],
+            values: [nil, 30.5, 31],
             valueFormat: .decimal(places: 1)
         )
 
-        #expect(series.points.map(\.plottedValue.isNaN) == [true, false, true, false, false])
-        #expect(series.isolatedValuePoints.map(\.value) == [30.5])
-        #expect(series.latestValued == series.points[4])
-        #expect(series.points.map(\.valueDescription) == [nil, "30.5", nil, "31.0", "33.6"])
-    }
-
-    @Test func valuesThatStopShortOfTheSeasonLeaveTheRestOfItsDaysWithout() {
-        let days = (0..<3).map { Self.firstDay + Double($0) * Self.day }
-
-        let series = HistorySeries(title: "Scoring Offense", days: days, rankings: [40, 38, 37], values: [30.5])
-
         // Every day keeps its ranking: the values don't decide how long the season is.
-        #expect(series.points.map(\.ranking) == [40, 38, 37])
-        #expect(series.points.map(\.value) == [30.5, nil, nil])
-        #expect(makeSeries([40, 38]).hasValues == false)
+        #expect(series.points.map(\.ranking) == [40, 38, 37, 35])
+        #expect(series.points.map(\.valueDescription) == [nil, "30.5", "31.0", nil])
     }
 
     @Test(arguments: [

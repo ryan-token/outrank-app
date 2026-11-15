@@ -30,32 +30,10 @@ nonisolated enum StatValueFormat: Equatable, Sendable {
     func string(for value: Double) -> String {
         // An unlisted stat's own number of places isn't known, so none are padded on.
         let leastFractionLength = self == .unlisted ? 0 : fractionLength
-        return string(for: value, precision: .fractionLength(leastFractionLength...fractionLength))
-    }
+        let precision = NumberFormatStyleConfiguration.Precision
+            .fractionLength(leastFractionLength...fractionLength)
 
-    /// A value on a chart's scale, where a round number drops its decimals: "500", not "500.0".
-    func axisLabel(for value: Double) -> String {
-        string(for: value, precision: .fractionLength(0...fractionLength))
-    }
-
-    /// The smallest difference between two values that their text can show: 0.1 for a
-    /// stat written to one decimal place, and 0.001 for a percentage, which is a fraction
-    /// written as "58.9%".
-    var smallestStep: Double {
-        pow(10, -Double(self == .percent ? fractionLength + 2 : fractionLength))
-    }
-
-    private var fractionLength: Int {
-        switch self {
-        case .count: 0
-        case .decimal(let places): places
-        case .percent, .minutes: 1
-        case .unlisted: 2
-        }
-    }
-
-    private func string(for value: Double, precision: NumberFormatStyleConfiguration.Precision) -> String {
-        switch self {
+        return switch self {
         case .count, .decimal, .unlisted:
             value.formatted(.number.precision(precision))
         case .percent:
@@ -64,6 +42,15 @@ nonisolated enum StatValueFormat: Equatable, Sendable {
             Measurement(value: value, unit: UnitDuration.minutes).formatted(
                 .measurement(width: .abbreviated, usage: .asProvided, numberFormatStyle: .number.precision(precision))
             )
+        }
+    }
+
+    private var fractionLength: Int {
+        switch self {
+        case .count: 0
+        case .decimal(let places): places
+        case .percent, .minutes: 1
+        case .unlisted: 2
         }
     }
 }

@@ -8,7 +8,8 @@
 import SwiftUI
 
 /// A name with a ranking on the trailing edge: a stat with the selected team's ranking,
-/// or a team with its ranking in one stat and, before it, the value that earned it.
+/// or a team with its ranking in one stat and, before it, a badge with the value that
+/// earned it.
 struct RankingRow: View {
     let title: String
 
@@ -21,8 +22,10 @@ struct RankingRow: View {
     var titleFont: Font = .body
     var rankingFont: Font = .body
 
-    /// Last place in the FBS field, the ranking with the most digits.
-    private static let longestRanking = Conversions.humanReadableRanking(for: AllTeams.all.count)
+    /// The longest value in the table of rankings this row is part of, which lines the
+    /// row's value and ranking up with the rows around it and the headings above them.
+    /// `nil` for a row that stands alone, or whose table has no values.
+    var inTableWithLongestValue: String?
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.backgroundProminence) private var backgroundProminence
@@ -34,37 +37,43 @@ struct RankingRow: View {
         let layout = dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading))
             : AnyLayout(HStackLayout())
+        // Stacked under the name there are no columns to keep to.
+        let longestValue = dynamicTypeSize.isAccessibilitySize ? nil : inTableWithLongestValue
+        let rankingText = Text(Conversions.humanReadableRanking(for: ranking))
+            // Digits of one width, so last place really is the widest ranking in a table.
+            .monospacedDigit()
+            // On a selected row's filled background the ranking color would blend in, so
+            // it matches the row's white text instead.
+            .foregroundStyle(backgroundProminence == .increased ? .white : RankingStyle.color(for: ranking))
 
         layout {
             Text(title)
                 .font(titleFont)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let value {
-                Text(value)
-                    .font(rankingFont)
-                    .monospacedDigit()
-                    .foregroundStyle(.secondary)
-                    .layoutPriority(1)
-            }
+            Group {
+                if let longestValue {
+                    // A team with no value still takes its place in the column, so its
+                    // ranking stays under the right heading.
+                    RankingTableCell(column: .value(longest: longestValue)) {
+                        if let value {
+                            StatValueBadge(value: value)
+                        }
+                    }
 
-            ZStack(alignment: .trailing) {
-                // Beside a value, every ranking takes the room of the longest one, so the
-                // values line up down the list as the rankings do.
-                if value != nil, !dynamicTypeSize.isAccessibilitySize {
-                    Text(Self.longestRanking)
-                        .hidden()
+                    RankingTableCell(column: .ranking) {
+                        rankingText
+                    }
+                } else {
+                    if let value {
+                        StatValueBadge(value: value)
+                    }
+
+                    rankingText
                 }
-
-                Text(Conversions.humanReadableRanking(for: ranking))
-                    // On a selected row's filled background the ranking color would blend
-                    // in, so it matches the row's white text instead.
-                    .foregroundStyle(backgroundProminence == .increased ? .white : RankingStyle.color(for: ranking))
             }
             .font(rankingFont)
-            // Digits of one width, so "138th" really is the widest ranking there is.
-            .monospacedDigit()
-            // Takes its full width first, so the name is what wraps.
+            // Take their full width first, so the name is what wraps.
             .layoutPriority(1)
         }
         .accessibilityElement(children: .combine)

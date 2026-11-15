@@ -42,13 +42,7 @@ struct HistoryPanes: View {
 }
 
 #if DEBUG
-#Preview("Rankings", traits: .modifier(HistoryPreviewData())) {
-    NavigationStack {
-        HistoryPanes(chartHeight: 280, reloadAttempt: .constant(0))
-    }
-}
-
-#Preview("Values", traits: .modifier(HistoryPreviewData(metric: .value))) {
+#Preview(traits: .modifier(HistoryPreviewData())) {
     NavigationStack {
         HistoryPanes(chartHeight: 280, reloadAttempt: .constant(0))
     }

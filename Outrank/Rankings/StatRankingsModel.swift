@@ -12,6 +12,10 @@ import OSLog
 @Observable
 final class StatRankingsModel {
     private(set) var entries: [RankingEntry] = []
+
+    /// The longest of the entries' values as text, for a table to size its column of them
+    /// by. `nil` when no team has a value.
+    private(set) var longestValue: String?
     private(set) var loadFailed = false
 
     /// Changes whenever `entries` does, giving views a cheap value to animate on.
@@ -54,6 +58,7 @@ final class StatRankingsModel {
                 )
             }
             entries = SortMethod.byRankingAscending.sorted(unsorted)
+            longestValue = unsorted.compactMap(\.value).max { $0.count < $1.count }
             loadedAt = now()
             loadFailed = false
             revision += 1

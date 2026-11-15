@@ -26,16 +26,6 @@ struct StatValueFormatTests {
         #expect(format.string(for: value) == expected)
     }
 
-    @Test(arguments: [
-        (StatValueFormat.decimal(places: 1), 500.0, "500"),
-        (.decimal(places: 1), 32.5, "32.5"),
-        (.percent, 0.55, "55%"),
-        (.minutes, 30.0, "30 min")
-    ])
-    func roundNumberOnAChartScaleDropsItsDecimals(format: StatValueFormat, value: Double, expected: String) {
-        #expect(format.axisLabel(for: value) == expected)
-    }
-
     // The formats are keyed by stat name in a table of their own, where a misspelled or
     // forgotten stat would quietly show the wrong number of decimals.
     @Test func everyStatTheAppListsHasAFormat() {

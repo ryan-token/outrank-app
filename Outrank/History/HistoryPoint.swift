@@ -13,31 +13,15 @@ nonisolated struct HistoryPoint: Equatable, Sendable {
     /// `nil` when the team had no ranking in the stat that day.
     let ranking: Int?
 
-    /// The stat value behind the ranking. `nil` when the team had none that day, or the
-    /// backend wasn't recording values yet.
-    let value: Double?
-
-    /// `value` as text, such as "33.6", or `nil` for a day without one.
-    let valueDescription: String?
-
-    init(date: Date, ranking: Int?, value: Double? = nil, valueDescription: String? = nil) {
-        self.date = date
-        self.ranking = ranking
-        self.value = value
-        self.valueDescription = valueDescription
-    }
+    /// The stat value behind the ranking as text, such as "33.6". `nil` when the team had
+    /// none that day, or the backend wasn't recording values yet.
+    var valueDescription: String?
 
     /// Where the day sits on the ranking scale. A day with no ranking is not a number,
     /// which breaks the line there instead of drawing it through a ranking the team
     /// never had.
     var plottedRanking: Double {
         ranking.map(Double.init) ?? .nan
-    }
-
-    /// Where the day sits on the value scale. Not a number on a day without a value, for
-    /// the same reason.
-    var plottedValue: Double {
-        value ?? .nan
     }
 
     /// The ranking as text, such as "34th", or "Unknown" for a day without one.
@@ -53,9 +37,5 @@ nonisolated struct HistoryPoint: Equatable, Sendable {
 
     var accessibilityValue: Text {
         Text(rankingDescription)
-    }
-
-    var valueAccessibilityValue: Text {
-        valueDescription.map { Text($0) } ?? Text("No Value")
     }
 }
