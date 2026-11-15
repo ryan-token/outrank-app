@@ -19,11 +19,17 @@ struct SidebarRow<Value: Hashable, Label: View>: View {
     @Environment(\.splitViewIsCollapsed) private var splitViewIsCollapsed
 
     var body: some View {
-        Button {
-            selection = value
-        } label: {
+        Button(action: select) {
             HStack {
-                label
+                if isHighlightedByRow {
+                    // What a list does for the row it highlights: white text, and
+                    // telling the label it sits on a fill.
+                    label
+                        .foregroundStyle(.white)
+                        .environment(\.backgroundProminence, .increased)
+                } else {
+                    label
+                }
 
                 // A chevron only where rows push. Beside the sidebar, the highlighted row
                 // says which screen is showing.
@@ -38,7 +44,17 @@ struct SidebarRow<Value: Hashable, Label: View>: View {
         }
         // Lets a list that is given the selection highlight this row.
         .tag(value)
+        .listRowBackground(isHighlightedByRow ? SidebarHighlight() : nil)
         .accessibilityAddTraits(selection == value ? .isSelected : [])
+    }
+
+    /// Whether this row draws the highlight for being selected. See `SidebarHighlight`.
+    private var isHighlightedByRow: Bool {
+        SidebarHighlight.isDrawnByRows && !splitViewIsCollapsed && selection == value
+    }
+
+    private func select() {
+        selection = value
     }
 }
 
@@ -52,7 +68,7 @@ extension EnvironmentValues {
 #Preview {
     @Previewable @State var selection: String?
 
-    List(selection: .constant(selection)) {
+    SidebarList(selection: selection) {
         SidebarRow(value: "Passing Offense", selection: $selection) {
             RankingRow(title: "Passing Offense", ranking: 97, titleFont: .headline)
         }

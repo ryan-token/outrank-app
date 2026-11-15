@@ -13,12 +13,8 @@ struct SettingsSidebar: View {
     @State private var isShowingAbout = false
     @State private var lastUpdated = LastUpdatedModel()
 
-    @Environment(\.splitViewIsCollapsed) private var splitViewIsCollapsed
-
     var body: some View {
-        // The list only shows the selection, and only in two columns; its rows set it.
-        // See `SidebarRow` and `RankingsSidebar`.
-        List(selection: .constant(splitViewIsCollapsed ? nil : selectedDetail)) {
+        SidebarList(selection: selectedDetail) {
             PreferencesSection(selectedDetail: $selectedDetail)
             SupportSection(selectedDetail: $selectedDetail)
             GeneralSection(isShowingAbout: $isShowingAbout, rankingsLastUpdated: lastUpdated.date)

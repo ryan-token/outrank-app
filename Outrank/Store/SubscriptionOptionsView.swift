@@ -19,12 +19,19 @@ import SwiftUI
 struct SubscriptionOptionsView<Header: View>: View {
     @ContentBuilder let header: Header
 
+    /// The widest the header gets, close to the width StoreKit gives the options under
+    /// it. Without a limit its text runs the full width of a Mac window or a landscape
+    /// iPad in long, hard-to-read lines. Scales with the text size, so larger text
+    /// keeps a similar number of words on each line.
+    @ScaledMetric(relativeTo: .body) private var headerMaxWidth = 380.0
+
     var body: some View {
         SubscriptionStoreView(productIDs: SubscriptionTier.productIDs) {
             VStack {
                 header
                 SubscriptionPolicyLinks()
             }
+            .frame(maxWidth: headerMaxWidth)
         }
         .storeButton(.visible, for: .restorePurchases)
         .storeButton(.hidden, for: .policies)
