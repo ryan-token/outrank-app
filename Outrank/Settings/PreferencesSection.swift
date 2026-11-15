@@ -19,16 +19,10 @@ struct PreferencesSection: View {
         Section("Preferences") {
             MultiPicker(selectedDetail: $selectedDetail)
 
-            Picker(selection: $widgetTeam) {
-                ForEach(AllTeams.all) { team in
-                    Text(team.name).tag(team.name)
+            WidgetTeamPicker(team: $widgetTeam)
+                .onChange(of: widgetTeam) {
+                    WidgetCenter.shared.reloadAllTimelines()
                 }
-            } label: {
-                SettingsLabel(title: "Widget", icon: "square.text.square.fill", iconColor: .purple)
-            }
-            .onChange(of: widgetTeam) {
-                WidgetCenter.shared.reloadAllTimelines()
-            }
         }
     }
 }
