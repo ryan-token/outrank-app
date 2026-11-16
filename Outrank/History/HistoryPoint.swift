@@ -13,6 +13,10 @@ nonisolated struct HistoryPoint: Equatable, Sendable {
     /// `nil` when the team had no ranking in the stat that day.
     let ranking: Int?
 
+    /// The stat value behind the ranking as text, such as "33.6". `nil` when the team had
+    /// none that day, or the backend wasn't recording values yet.
+    var valueDescription: String?
+
     /// Where the day sits on the ranking scale. A day with no ranking is not a number,
     /// which breaks the line there instead of drawing it through a ranking the team
     /// never had.

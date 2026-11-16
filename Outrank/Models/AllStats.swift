@@ -34,7 +34,7 @@ nonisolated enum AllStats {
         "FourthDownConversionPctDefense": "Percentage of the time opposing teams convert on 4th down.",
         "TotalDefense": "Average number of yards allowed per game.",
         "TacklesForLossAllowed": "Average number of times per game a team's offense allows a TFL.",
-        "KickoffReturnDefense": "Average number of yards a team gives up on kickoff returns.",
+        "KickoffReturnDefense": "Average number of yards a team gives up per kickoff return.",
         "RedZoneOffense": """
             Percentage of the time a team scores a field goal or touchdown once they've entered the red zone.
             """,
@@ -43,7 +43,7 @@ nonisolated enum AllStats {
         "PassesIntercepted": "Total number of times a team has intercepted a pass.",
         "PassingYardsAllowed": "Average number of passing yards a team allows per game.",
         "ThirdDownConversionPct": "Percentage of the time a team converts on 3rd down.",
-        "KickoffReturns": "Average number of yards a team gains on kickoff returns per game.",
+        "KickoffReturns": "Average number of yards a team gains per kickoff return.",
         "FewestPenaltyYardsPerGame": """
             Average number of penalty yards a team gives up per game. Lower number = fewer penalty yards.
             """,
@@ -51,7 +51,7 @@ nonisolated enum AllStats {
         "PassesHadIntercepted": "Total number of interceptions a team has thrown.",
         "FirstDownsOffense": "Total number of first downs a team has gained.",
         "TimeOfPossession": "Average amount of time a team controlled possession per game.",
-        "PuntReturns": "Average number of punt return yards a team gains per game.",
+        "PuntReturns": "Average number of yards a team gains per punt return.",
         "BlockedKicksAllowed": "Total number of kicks a team has had blocked.",
         "FewestPenalties": "Total number of penalties a team has committed. Lower number = fewer penalties.",
         "FumblesRecovered": "Total number of fumbles a team has recovered.",
@@ -60,13 +60,13 @@ nonisolated enum AllStats {
             Percentage of the time the opposing team scores a field goal or touchdown once they've entered the red \
             zone.
             """,
-        "PuntReturnDefense": "Average number of yards a team gives up on punt returns per game.",
+        "PuntReturnDefense": "Average number of yards a team gives up per punt return.",
         "TurnoversLost": "Total number of turnovers a team has committed (fumbles lost and interceptions thrown).",
         "NetPunting": "Average yards per punt - average punt return yards allowed",
         "FewestPenaltyYards": "Total number of penalty yards a team has allowed.",
         "TurnoverMargin": """
-            Average number of turnovers caused - turnovers lost per game. Lower number = better margin, meaning a \
-            team causes more turnovers than they lose.
+            Average number of turnovers gained minus turnovers lost per game. A positive margin means a team \
+            takes the ball away more than it gives it up.
             """,
         "FirstDownsDefense": "Total number of first downs a team has allowed to opposing teams.",
         "TeamTacklesForLoss": "Average number of tackles for loss a team makes per game.",

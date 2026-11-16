@@ -29,7 +29,7 @@ struct MultiPicker: View {
             LabeledContent {
                 Text(summary)
             } label: {
-                SettingsLabel(title: "Favorites", icon: "star.square.fill", iconColor: .yellow)
+                SettingsLabel(title: "Favorites", icon: "star", iconColor: .yellow)
             }
         }
     }

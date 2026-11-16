@@ -5,7 +5,7 @@
 
 import Foundation
 
-/// One stat's rankings across a season, prepared for the chart.
+/// One stat's rankings and values across a season, prepared for the chart.
 ///
 /// Built when the history or the chosen stat changes, so drawing the chart and following
 /// a selection never sort, scan, or summarize inside a view update.
@@ -49,11 +49,27 @@ nonisolated struct HistorySeries: Equatable, Sendable {
     ///   - days: The season's days.
     ///   - rankings: The team's ranking on each of `days`, lined up by position. Any past
     ///     the end of `days` are ignored.
-    init(title: String, days: [Date], rankings: [Int?]) {
+    ///   - values: The stat value behind each of `rankings`, lined up the same way. Days
+    ///     past its end have none, so a season with no values can pass nothing.
+    ///   - valueFormat: How to write the values out.
+    init(
+        title: String,
+        days: [Date],
+        rankings: [Int?],
+        values: [Double?] = [],
+        valueFormat: StatValueFormat = .unlisted
+    ) {
         // Put in date order here rather than trusted to arrive in it: the chart draws
         // its line through the points in this order, and `point(nearest:)` searches it.
-        let points = zip(days, rankings)
-            .map { HistoryPoint(date: $0, ranking: $1) }
+        let points = zip(days, rankings).enumerated()
+            .map { index, day in
+                let value = values.indices.contains(index) ? values[index] : nil
+                return HistoryPoint(
+                    date: day.0,
+                    ranking: day.1,
+                    valueDescription: value.map(valueFormat.string(for:))
+                )
+            }
             .sorted { $0.date < $1.date }
         let ranked = points.compactMap { point in
             point.ranking.map { (point: point, ranking: $0) }
@@ -61,12 +77,7 @@ nonisolated struct HistorySeries: Equatable, Sendable {
 
         self.title = title
         self.points = points
-        isolatedPoints = points.indices.compactMap { index in
-            let hasRankedNeighbor = [index - 1, index + 1].contains { neighbor in
-                points.indices.contains(neighbor) && points[neighbor].ranking != nil
-            }
-            return points[index].ranking != nil && !hasRankedNeighbor ? points[index] : nil
-        }
+        isolatedPoints = Self.isolated(points)
         latest = ranked.last?.point
         best = ranked.min { $0.ranking < $1.ranking }?.point
         worst = ranked.max { $0.ranking < $1.ranking }?.point
@@ -79,6 +90,16 @@ nonisolated struct HistorySeries: Equatable, Sendable {
         // bottom-half one.
         topHalfFraction = (Double(RankingStyle.goodRankingCutoff) + 0.5 - scaleDomain.lowerBound)
             / (scaleDomain.upperBound - scaleDomain.lowerBound)
+    }
+
+    /// The ranked points with no ranked day on either side.
+    private static func isolated(_ points: [HistoryPoint]) -> [HistoryPoint] {
+        points.indices.compactMap { index in
+            let hasRankedNeighbor = [index - 1, index + 1].contains { neighbor in
+                points.indices.contains(neighbor) && points[neighbor].ranking != nil
+            }
+            return points[index].ranking != nil && !hasRankedNeighbor ? points[index] : nil
+        }
     }
 
     /// The day nearest to `date`, for following a selection across the chart. Dates

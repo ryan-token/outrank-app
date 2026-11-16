@@ -14,7 +14,7 @@ struct SupportSection: View {
         Section("Support") {
             Link(destination: AppLinks.writeReview) {
                 SettingsRow(
-                    icon: "heart.square.fill",
+                    icon: "heart",
                     iconColor: .red,
                     title: "Rate",
                     showsExternalIndicator: true
@@ -22,11 +22,11 @@ struct SupportSection: View {
             }
 
             SidebarRow(value: .tipJar, selection: $selectedDetail) {
-                SettingsRow(icon: "centsign.square.fill", iconColor: .orange, title: "Leave a Tip")
+                SettingsRow(icon: "centsign", iconColor: .orange, title: "Leave a Tip")
             }
 
             SidebarRow(value: .subscriptions, selection: $selectedDetail) {
-                SettingsRow(icon: "dollarsign.square.fill", iconColor: .green, title: "Subscribe")
+                SettingsRow(icon: "dollarsign", iconColor: .green, title: "Subscribe")
             }
         }
     }

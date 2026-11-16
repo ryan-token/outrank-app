@@ -232,7 +232,9 @@ final class HistoryModel {
             series = HistorySeries(
                 title: Conversions.humanReadableStat(for: stat),
                 days: days,
-                rankings: history.ranks[stat] ?? []
+                rankings: history.ranks[stat] ?? [],
+                values: history.values[stat] ?? [],
+                valueFormat: AllStats.valueFormat(for: stat)
             )
         } else {
             series = .empty

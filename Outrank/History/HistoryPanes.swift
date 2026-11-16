@@ -40,3 +40,11 @@ struct HistoryPanes: View {
         }
     }
 }
+
+#if DEBUG
+#Preview(traits: .modifier(HistoryPreviewData())) {
+    NavigationStack {
+        HistoryPanes(chartHeight: 280, reloadAttempt: .constant(0))
+    }
+}
+#endif

@@ -66,6 +66,24 @@ struct HistorySeriesTests {
         #expect(series.isolatedPoints.map(\.ranking) == [5, 7])
     }
 
+    @Test func eachDayCarriesItsValueAsTextAndDaysWithoutOneCarryNone() {
+        let days = (0..<4).map { Self.firstDay + Double($0) * Self.day }
+
+        // The values stop a day short of the season, as they do for one that began before
+        // the backend recorded them.
+        let series = HistorySeries(
+            title: "Scoring Offense",
+            days: days,
+            rankings: [40, 38, 37, 35],
+            values: [nil, 30.5, 31],
+            valueFormat: .decimal(places: 1)
+        )
+
+        // Every day keeps its ranking: the values don't decide how long the season is.
+        #expect(series.points.map(\.ranking) == [40, 38, 37, 35])
+        #expect(series.points.map(\.valueDescription) == [nil, "30.5", "31.0", nil])
+    }
+
     @Test(arguments: [
         (-48.0, 0), // before the season clamps to its first day
         (5.0, 0),
