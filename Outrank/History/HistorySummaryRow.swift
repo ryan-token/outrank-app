@@ -15,7 +15,7 @@ struct HistorySummaryRow: View {
         LabeledContent {
             HStack {
                 if let value = point.valueDescription {
-                    StatValueBadge(value: value)
+                    StatValueText(value: value)
                 }
 
                 Text(point.rankingDescription)

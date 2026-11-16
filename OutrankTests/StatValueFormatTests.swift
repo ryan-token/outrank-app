@@ -16,6 +16,7 @@ struct StatValueFormatTests {
         (.decimal(places: 1), 373.0, "373.0"),
         (.decimal(places: 2), 0.3, "0.30"),
         (.decimal(places: 2), -1.2, "-1.20"),
+        (.rating(places: 2), 158.4, "158.40"),
         (.percent, 0.589, "58.9%"),
         (.percent, 1.0, "100.0%"),
         (.minutes, 36.7, "36.7 min"),
@@ -24,6 +25,12 @@ struct StatValueFormatTests {
     ])
     func valueReadsTheWayNcaaPrintsIt(format: StatValueFormat, value: Double, expected: String) {
         #expect(format.string(for: value) == expected)
+    }
+
+    // A rating is worked out by formula, and calling it an average would be wrong.
+    @Test(arguments: ["TeamPassingEfficiency", "TeamPassingEfficiencyDefense"])
+    func passingEfficiencyIsARating(stat: String) {
+        #expect(AllStats.valueFormat(for: stat) == .rating(places: 2))
     }
 
     // The formats are keyed by stat name in a table of their own, where a misspelled or

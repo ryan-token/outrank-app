@@ -21,7 +21,9 @@ struct RankingTableCell<Content: View>: View {
     }
 
     var body: some View {
-        ZStack(alignment: column.alignment) {
+        // Both columns are numbers, which keep to the trailing edge so their digits line
+        // up down the table.
+        ZStack(alignment: .trailing) {
             Group {
                 Text(column.title)
                     .font(RankingTableColumn.headingFont)
@@ -29,8 +31,8 @@ struct RankingTableCell<Content: View>: View {
                 // The selected team's row is set in the headline font, the widest there is.
                 Group {
                     switch column {
-                    case .value(let longest):
-                        StatValueBadge(value: longest)
+                    case .value(let column):
+                        StatValueText(value: column.longestValue)
                     case .ranking:
                         Text(Self.longestRanking)
                             .monospacedDigit()

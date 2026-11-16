@@ -23,6 +23,13 @@ struct RankingDetailView: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    /// Where the table's headings and rows are on screen, across it. Every row says, so
+    /// it is still known, and still right after the screen turns, far down the table.
+    @State private var tableSpan = HorizontalSpan()
+
+    /// Whether the table's headings have scrolled up past the place of their pinned copy.
+    @State private var headerPin = RankingTableHeaderPin()
+
     /// The room between a heading and the text under it, the same in each section that
     /// has both.
     @ScaledMetric private var headingSpacing = 8.0
@@ -31,7 +38,15 @@ struct RankingDetailView: View {
         Conversions.humanReadableStat(for: stat)
     }
 
+    /// At accessibility text sizes each row stacks its numbers under the team's name,
+    /// which leaves no columns to head.
+    private var showsTableHeader: Bool {
+        !model.entries.isEmpty && !dynamicTypeSize.isAccessibilitySize
+    }
+
     var body: some View {
+        let valueColumn = RankingValueColumn(stat: stat, longestValue: model.longestValue)
+
         List {
             Section {
                 // One row: the sentence spells out the ranking above it.
@@ -44,7 +59,13 @@ struct RankingDetailView: View {
                     )
 
                     if let ranking {
-                        RankingSentence(team: team, stat: humanReadableStat, ranking: ranking, value: value)
+                        RankingSentence(
+                            team: team,
+                            stat: humanReadableStat,
+                            ranking: ranking,
+                            value: value,
+                            valueFormat: AllStats.valueFormat(for: stat)
+                        )
                     }
                 }
             }
@@ -66,10 +87,17 @@ struct RankingDetailView: View {
                     .font(.headline)
                     .listRowSeparator(.hidden, edges: .bottom)
 
-                // At accessibility text sizes each row stacks its numbers under the team's
-                // name, which leaves no columns to head.
-                if !model.entries.isEmpty, !dynamicTypeSize.isAccessibilitySize {
-                    RankingTableHeader(longestValue: model.longestValue)
+                if showsTableHeader {
+                    RankingTableHeader(valueColumn: valueColumn)
+                        .onHorizontalSpanChange { tableSpan = $0 }
+                        .onGeometryChange(for: CGFloat.self) { proxy in
+                            proxy.frame(in: .global).minY
+                        } action: { minY in
+                            headerPin.headingsMoved(to: minY)
+                        }
+                        .onDisappear {
+                            headerPin.headingsLeftScreen()
+                        }
                 }
 
                 ForEach(model.entries) { entry in
@@ -80,8 +108,11 @@ struct RankingDetailView: View {
                         ranking: entry.ranking,
                         titleFont: isCurrentTeam ? .headline : .body,
                         rankingFont: isCurrentTeam ? .headline : .body,
-                        inTableWithLongestValue: model.longestValue
+                        inTableWith: valueColumn
                     )
+                    // Bold alone is easy to scroll past in a table this long.
+                    .listRowBackground(isCurrentTeam ? CurrentTeamHighlight(ranking: entry.ranking) : nil)
+                    .onHorizontalSpanChange { tableSpan = $0 }
                 }
 
                 if model.loadFailed {
@@ -90,6 +121,22 @@ struct RankingDetailView: View {
             }
         }
         .animation(.default, value: model.revision)
+        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+            geometry.contentOffset.y
+        } action: { _, contentOffset in
+            headerPin.listScrolled(to: contentOffset)
+        }
+        .overlay(alignment: .top) {
+            if showsTableHeader {
+                PinnedRankingTableHeader(
+                    valueColumn: valueColumn,
+                    headingsMinX: tableSpan.minX,
+                    headingsWidth: tableSpan.width,
+                    isPinned: headerPin.isPinned,
+                    headingsMinY: $headerPin.pinLine
+                )
+            }
+        }
         .navigationTitle(humanReadableStat)
         .navigationBarTitleDisplayMode(.inline)
         .refreshable {

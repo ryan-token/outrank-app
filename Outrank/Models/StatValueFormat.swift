@@ -11,9 +11,13 @@ nonisolated enum StatValueFormat: Equatable, Sendable {
     /// Something counted, such as fumbles recovered: "13".
     case count
 
-    /// An average or a rating, to as many decimal places as ncaa.com prints it with:
+    /// An average, to as many decimal places as ncaa.com prints it with:
     /// "534.7" yards a game, "46.95" net yards a punt.
     case decimal(places: Int)
+
+    /// A figure worked out by formula rather than counted or averaged, such as passing
+    /// efficiency: "158.42".
+    case rating(places: Int)
 
     /// A share of attempts, which arrives as a fraction: 0.589 is "58.9%".
     case percent
@@ -39,7 +43,7 @@ nonisolated enum StatValueFormat: Equatable, Sendable {
             .fractionLength(leastFractionLength...fractionLength)
 
         return switch self {
-        case .count, .decimal, .unlisted:
+        case .count, .decimal, .rating, .unlisted:
             value.formatted(.number.precision(precision).locale(Self.locale))
         case .percent:
             value.formatted(.percent.precision(precision).locale(Self.locale))
@@ -54,7 +58,7 @@ nonisolated enum StatValueFormat: Equatable, Sendable {
     private var fractionLength: Int {
         switch self {
         case .count: 0
-        case .decimal(let places): places
+        case .decimal(let places), .rating(let places): places
         case .percent, .minutes: 1
         case .unlisted: 2
         }

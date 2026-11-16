@@ -8,8 +8,7 @@
 import SwiftUI
 
 /// A name with a ranking on the trailing edge: a stat with the selected team's ranking,
-/// or a team with its ranking in one stat and, before it, a badge with the value that
-/// earned it.
+/// or a team with its ranking in one stat and, before it, the value that earned it.
 struct RankingRow: View {
     let title: String
 
@@ -22,10 +21,10 @@ struct RankingRow: View {
     var titleFont: Font = .body
     var rankingFont: Font = .body
 
-    /// The longest value in the table of rankings this row is part of, which lines the
+    /// The column of values in the table of rankings this row is part of, which lines the
     /// row's value and ranking up with the rows around it and the headings above them.
     /// `nil` for a row that stands alone, or whose table has no values.
-    var inTableWithLongestValue: String?
+    var inTableWith: RankingValueColumn?
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.backgroundProminence) private var backgroundProminence
@@ -38,7 +37,7 @@ struct RankingRow: View {
             ? AnyLayout(VStackLayout(alignment: .leading))
             : AnyLayout(HStackLayout())
         // Stacked under the name there are no columns to keep to.
-        let longestValue = dynamicTypeSize.isAccessibilitySize ? nil : inTableWithLongestValue
+        let valueColumn = dynamicTypeSize.isAccessibilitySize ? nil : inTableWith
         let rankingText = Text(Conversions.humanReadableRanking(for: ranking))
             // Digits of one width, so last place really is the widest ranking in a table.
             .monospacedDigit()
@@ -52,12 +51,12 @@ struct RankingRow: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Group {
-                if let longestValue {
+                if let valueColumn {
                     // A team with no value still takes its place in the column, so its
                     // ranking stays under the right heading.
-                    RankingTableCell(column: .value(longest: longestValue)) {
+                    RankingTableCell(column: .value(valueColumn)) {
                         if let value {
-                            StatValueBadge(value: value)
+                            StatValueText(value: value)
                         }
                     }
 
@@ -66,7 +65,7 @@ struct RankingRow: View {
                     }
                 } else {
                     if let value {
-                        StatValueBadge(value: value)
+                        StatValueText(value: value)
                     }
 
                     rankingText
