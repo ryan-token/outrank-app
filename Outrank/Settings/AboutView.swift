@@ -50,6 +50,16 @@ struct AboutView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Try out this developer's other app, Hot Local Food: Find Dinner")
+
+                    Link(destination: AppLinks.youHQ) {
+                        OtherAppRow(
+                            image: .youHQ,
+                            title: "YouHQ: Life Organizer",
+                            subtitle: "Track homes, vehicles, money"
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Try out this developer's other app, YouHQ: Life Organizer")
                 }
             }
             .navigationTitle("About")

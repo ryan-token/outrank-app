@@ -16,11 +16,12 @@ struct OtherAppRow: View {
 
     var body: some View {
         HStack {
+            // A render of the app's icon that already carries the system icon shape, so it
+            // needs no clipping here.
             Image(image)
                 .resizable()
                 .scaledToFit()
                 .frame(width: iconSize, height: iconSize)
-                .clipShape(.rect(cornerRadius: iconSize * 11 / 60))
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading) {

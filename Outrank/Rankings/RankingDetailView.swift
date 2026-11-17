@@ -110,9 +110,13 @@ struct RankingDetailView: View {
                         rankingFont: isCurrentTeam ? .headline : .body,
                         inTableWith: valueColumn
                     )
-                    // Bold alone is easy to scroll past in a table this long.
-                    .listRowBackground(isCurrentTeam ? CurrentTeamHighlight(ranking: entry.ranking) : nil)
                     .onHorizontalSpanChange { tableSpan = $0 }
+                    // Bold alone is easy to scroll past in a table this long.
+                    .background {
+                        if isCurrentTeam {
+                            CurrentTeamHighlight(ranking: entry.ranking)
+                        }
+                    }
                 }
 
                 if model.loadFailed {

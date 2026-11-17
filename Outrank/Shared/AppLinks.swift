@@ -14,6 +14,7 @@ nonisolated enum AppLinks {
     static let termsOfUse = url("https://ryantoken.com/terms-of-use")
     static let catchUp = url("itms-apps://apps.apple.com/us/app/catchup-keep-in-touch/id1358023550")
     static let hotLocalFood = url("itms-apps://apps.apple.com/us/app/hot-local-food/id1621818779")
+    static let youHQ = url("itms-apps://apps.apple.com/app/id6744900328")
 
     /// A new email to the developer with the subject already filled in.
     static let featureRequest: URL = {
