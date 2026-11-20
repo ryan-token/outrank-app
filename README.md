@@ -1,4 +1,6 @@
-# Outrank
+<img src=".github/app-icon.png" width="128" height="128" alt="Outrank app icon">
+
+# Outrank: CFB Stat Rankings
 
 See where your college football team ranks. Outrank shows every FBS team's national ranking in 47 statistics, from Scoring Offense to Turnover Margin, updated twice a day through the season.
 
